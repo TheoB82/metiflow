@@ -1,0 +1,20 @@
+# Initialize git repository
+git init
+
+# Create .gitignore file (optional but good practice)
+echo "node_modules/
+.DS_Store
+.vercel" > .gitignore
+
+# Add all files
+git add .
+
+# Make first commit
+git commit -m "Initial commit - Metiflow marketing site"
+
+# Create a GitHub repo (if you have GitHub CLI installed)
+gh repo create metiflow-marketing --public --source=. --remote=origin --push
+
+# OR if you don't have GitHub CLI, create repo manually on GitHub, then:
+# git remote add origin https://github.com/YOUR_USERNAME/metiflow-marketing.git
+# git push -u origin main

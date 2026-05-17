@@ -90,7 +90,7 @@ This repo controls marketing pages only. Ensure the app shell and auth pages inc
 - Terms (`/terms`)
 - Privacy (`/privacy`)
 - Cookies (`/cookies`)
-- Contact (`mailto:support@metiflow.com`)
+- Contact (`mailto:admin@metiflow.com`)
 - Company details
 
 ## 8) Enterprise Readiness (Later)

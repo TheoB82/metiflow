@@ -39,13 +39,13 @@
 
     const SUPABASE_URL = 'https://vljmmndwfttuglsqijso.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZsam1tbmR3ZnR0dWdsc3FpanNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0NTk0NTUsImV4cCI6MjA5NzAzNTQ1NX0.myJJsp_-EBOH-YI2iVv1De9xiFMFy9bqnCeHYOsOECU';
-    const VENUE_ID = '2d3bb96f-6270-4ab1-a8e0-bae191d4b03f';
-
-    const tableLabel = decodeURIComponent(new URLSearchParams(location.search).get('t') || 'Table');
+    const params = new URLSearchParams(location.search);
+    const tableLabel = decodeURIComponent(params.get('t') || 'Table');
+    const venueId = params.get('v') || '';
     document.getElementById('tbl-label').textContent = tableLabel;
 
     const client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    const channel = client.channel('kf-alerts-' + VENUE_ID);
+    const channel = client.channel('kf-alerts-' + venueId);
 
     channel.subscribe(async (status) => {
       if (status === 'SUBSCRIBED') {

@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KitchenFlow — Restaurant operating system by Metiflow</title>
+    <meta name="description" content="KitchenFlow is the complete service operating system for restaurants and hospitality. Live sync, table management, kitchen display, takeaway, bookings, and payments — runs entirely on your WiFi.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
+        * { font-family: 'Manrope', sans-serif; }
+        h1, h2, h3, .brand { font-family: 'Space Grotesk', sans-serif; }
+        .nav-blur { backdrop-filter: blur(12px); background: rgba(255,251,245,0.92); }
+        .gradient-text {
+            background: linear-gradient(135deg, #7c2d12 0%, #c2410c 50%, #d97706 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        body {
+            background:
+                radial-gradient(circle at top left, rgba(251,146,60,0.1), transparent 30%),
+                radial-gradient(circle at top right, rgba(245,158,11,0.08), transparent 28%),
+                #fffbf5;
+        }
+        .fade-in { opacity: 0; transform: translateY(18px); transition: opacity 0.6s ease, transform 0.6s ease; }
+        .fade-in.visible { opacity: 1; transform: translateY(0); }
+        .card-hover { transition: all 0.25s ease; }
+        .card-hover:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(234,88,12,0.12); }
+        @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:0.4} }
+        .pulse { animation: pulse-dot 2s ease-in-out infinite; }
+    </style>
+</head>
+<body class="text-slate-900">
+
+    <!-- Nav -->
+    <nav class="fixed top-0 w-full z-50 nav-blur border-b border-orange-100/80">
+        <div class="max-w-6xl mx-auto px-5 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <a href="/" class="flex items-center gap-2 text-slate-400 hover:text-slate-700 transition-colors text-sm font-semibold">
+                    <svg width="22" height="22" viewBox="0 0 140 140">
+                        <path d="M30 70 Q45 50,60 70 T90 70 T120 70" fill="none" stroke="#4f46e5" stroke-width="9" stroke-linecap="round"/>
+                        <circle cx="35" cy="70" r="7" fill="#4f46e5"/>
+                        <circle cx="115" cy="70" r="7" fill="#06b6d4"/>
+                    </svg>
+                    metiflow
+                </a>
+                <span class="text-slate-300">/</span>
+                <span class="text-sm font-bold text-amber-700">KitchenFlow</span>
+            </div>
+            <div class="hidden md:flex items-center gap-6 text-sm font-semibold text-slate-500">
+                <a href="#features" class="hover:text-slate-900 transition-colors">Features</a>
+                <a href="#pricing" class="hover:text-slate-900 transition-colors">Pricing</a>
+                <a href="#how-it-works" class="hover:text-slate-900 transition-colors">How it works</a>
+                <a href="#contact" class="px-4 py-2 bg-gradient-to-r from-amber-600 to-orange-500 text-white rounded-lg font-medium hover:shadow-md transition-all">Get started</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="min-h-screen flex items-center justify-center pt-20 px-5">
+        <div class="max-w-6xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
+            <div>
+                <div class="inline-flex items-center gap-2 bg-green-50 border border-green-200 rounded-full px-3 py-1.5 mb-6">
+                    <span class="w-2 h-2 rounded-full bg-green-500 pulse"></span>
+                    <span class="text-xs font-bold text-green-800">Now available — taking new venues</span>
+                </div>
+                <h1 class="text-5xl md:text-6xl font-bold leading-tight mb-5 brand">
+                    The operating system<br>
+                    <span class="gradient-text">for restaurant service.</span>
+                </h1>
+                <p class="text-xl text-slate-500 leading-relaxed mb-8 max-w-lg">
+                    KitchenFlow runs your entire front-of-house and kitchen from a single WiFi network. Every device stays in perfect sync — no cloud dependency, no lag, no dropped tickets.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-3 mb-10">
+                    <a href="#contact" class="px-6 py-3.5 bg-gradient-to-r from-amber-600 to-orange-500 text-white rounded-xl font-semibold hover:shadow-lg transition-all text-center">Get started</a>
+                    <a href="#features" class="px-6 py-3.5 bg-white text-slate-700 rounded-xl font-semibold border-2 border-slate-200 hover:border-amber-300 transition-all text-center">See what's included</a>
+                </div>
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="bg-white rounded-xl border border-orange-100 p-4 shadow-sm">
+                        <p class="text-xs text-slate-400 mb-1">Runs on</p>
+                        <p class="font-bold text-slate-900">Your WiFi only</p>
+                    </div>
+                    <div class="bg-white rounded-xl border border-orange-100 p-4 shadow-sm">
+                        <p class="text-xs text-slate-400 mb-1">Devices</p>
+                        <p class="font-bold text-slate-900">Android + macOS</p>
+                    </div>
+                    <div class="bg-white rounded-xl border border-orange-100 p-4 shadow-sm">
+                        <p class="text-xs text-slate-400 mb-1">Internet</p>
+                        <p class="font-bold text-slate-900">Not required</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-3xl border border-orange-100 p-7 shadow-xl fade-in">
+                <div class="bg-slate-950 rounded-2xl p-6 text-white mb-5">
+                    <p class="text-amber-400 text-xs font-bold uppercase tracking-widest mb-2">How it works</p>
+                    <p class="text-lg font-semibold leading-relaxed">One device on your network runs as the master relay. Every tablet, phone, and Mac connects to it — orders, table status, and kitchen tickets are synced instantly across all screens.</p>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-amber-50 rounded-xl p-4 border border-amber-100">
+                        <p class="text-xs font-bold text-amber-700 mb-1">Always in sync</p>
+                        <p class="text-sm text-slate-600">Every device sees the same live state. No refresh needed, no delays.</p>
+                    </div>
+                    <div class="bg-orange-50 rounded-xl p-4 border border-orange-100">
+                        <p class="text-xs font-bold text-orange-700 mb-1">Offline-first</p>
+                        <p class="text-sm text-slate-600">No internet means no outages. Service never stops because of your broadband.</p>
+                    </div>
+                    <div class="bg-amber-50 rounded-xl p-4 border border-amber-100">
+                        <p class="text-xs font-bold text-amber-700 mb-1">Any Android tablet</p>
+                        <p class="text-sm text-slate-600">Kitchen displays, order taking — works on any Android device on the network.</p>
+                    </div>
+                    <div class="bg-orange-50 rounded-xl p-4 border border-orange-100">
+                        <p class="text-xs font-bold text-orange-700 mb-1">Dedicated hardware</p>
+                        <p class="text-sm text-slate-600">WiFi-only tablets for each role — no personal phones in the service loop.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section id="features" class="py-20 px-5 bg-white">
+        <div class="max-w-5xl mx-auto">
+            <div class="text-center mb-12 fade-in">
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-3 brand">Every part of service, covered</h2>
+                <p class="text-lg text-slate-500">From the first booking to the last payment</p>
+            </div>
+            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+
+                <div class="bg-white rounded-2xl p-6 border-2 border-amber-100 shadow-sm card-hover fade-in">
+                    <div class="text-3xl mb-4">🗺️</div>
+                    <h3 class="text-lg font-bold text-slate-800 mb-2 brand">Table Management</h3>
+                    <p class="text-slate-500 text-sm">Visual floor plan with live table status. Enable or disable table service per venue. QR code generation for each table. Seat assignments and course tracking per table.</p>
+                </div>
+
+                <div class="bg-white rounded-2xl p-6 border-2 border-orange-100 shadow-sm card-hover fade-in">
+                    <div class="text-3xl mb-4">🍳</div>
+                    <h3 class="text-lg font-bold text-slate-800 mb-2 brand">Kitchen Display System</h3>
+                    <p class="text-slate-500 text-sm">Dedicated station views — food only, bar only, or all. Course tabs (Starters, Mains, Desserts) always visible. Bump tickets as they're prepared. Timing on every item.</p>
+                </div>
+
+                <div class="bg-white rounded-2xl p-6 border-2 border-amber-100 shadow-sm card-hover fade-in">
+                    <div class="text-3xl mb-4">📱</div>
+                    <h3 class="text-lg font-bold text-slate-800 mb-2 brand">Order Taking</h3>
+                    <p class="text-slate-500 text-sm">Full menu with categories, modifiers, and course assignment. Works on any Android or Mac. Drafts save automatically. Send to kitchen with one tap — syncs instantly across all devices.</p>
+                </div>
+
+                <div class="bg-white rounded-2xl p-6 border-2 border-orange-100 shadow-sm card-hover fade-in">
+                    <div class="text-3xl mb-4">🛵</div>
+                    <h3 class="text-lg font-bold text-slate-800 mb-2 brand">Takeaway & Pre-orders</h3>
+                    <p class="text-slate-500 text-sm">Schedule takeaway orders for later. Delivery and collection types. Upcoming orders feed into kitchen display when it's time to prepare — not before. ASAP and timed orders.</p>
+                </div>
+
+                <div class="bg-white rounded-2xl p-6 border-2 border-amber-100 shadow-sm card-hover fade-in">
+                    <div class="text-3xl mb-4">📅</div>
+                    <h3 class="text-lg font-bold text-slate-800 mb-2 brand">Bookings</h3>
+                    <p class="text-slate-500 text-sm">Reservation management with date, time, party size, and guest notes. View upcoming bookings at a glance. Integrates with table availability. No third-party booking platform needed.</p>
+                </div>
+
+                <div class="bg-white rounded-2xl p-6 border-2 border-orange-100 shadow-sm card-hover fade-in">
+                    <div class="text-3xl mb-4">💳</div>
+                    <h3 class="text-lg font-bold text-slate-800 mb-2 brand">Bill & Payments</h3>
+                    <p class="text-slate-500 text-sm">Itemised bill screen with cash and card payment recording. Tip tracking. Split payments across a table. Bill status syncs to all devices instantly. Order auto-closes when settled.</p>
+                </div>
+
+                <div class="bg-white rounded-2xl p-6 border-2 border-amber-100 shadow-sm card-hover fade-in">
+                    <div class="text-3xl mb-4">📊</div>
+                    <h3 class="text-lg font-bold text-slate-800 mb-2 brand">Daily Takings</h3>
+                    <p class="text-slate-500 text-sm">Owner-only revenue dashboard. Today, this week, and this month at a glance. Breakdown by cash and card. Tips tracked separately. Always up to date as payments come in.</p>
+                </div>
+
+                <div class="bg-white rounded-2xl p-6 border-2 border-orange-100 shadow-sm card-hover fade-in">
+                    <div class="text-3xl mb-4">📡</div>
+                    <h3 class="text-lg font-bold text-slate-800 mb-2 brand">Live Relay Sync</h3>
+                    <p class="text-slate-500 text-sm">One device on your network is the truth. All others connect to it over WiFi. If a staff device loses connection, their Send and Mark Done buttons disable automatically until they're back online.</p>
+                </div>
+
+                <div class="bg-white rounded-2xl p-6 border-2 border-amber-100 shadow-sm card-hover fade-in">
+                    <div class="text-3xl mb-4">🔒</div>
+                    <h3 class="text-lg font-bold text-slate-800 mb-2 brand">Role-based Access</h3>
+                    <p class="text-slate-500 text-sm">Owner, waiter, kitchen, bar — each device sees only what it needs. Table editing is owner-only. Menu management, venue config, and reset service are locked to admin roles.</p>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- How it works deep dive -->
+    <section id="how-it-works" class="py-20 px-5 bg-gradient-to-br from-amber-50 to-orange-50">
+        <div class="max-w-5xl mx-auto fade-in">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-3 brand">Designed around real service</h2>
+                <p class="text-lg text-slate-500">No laptops, no cloud, no single point of internet failure</p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-5 mb-10">
+                <div class="bg-white rounded-2xl p-6 border border-amber-200 shadow-sm text-center">
+                    <div class="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center text-2xl mx-auto mb-4">🖥️</div>
+                    <h3 class="font-bold text-slate-900 mb-2 brand">Master device</h3>
+                    <p class="text-sm text-slate-500">One always-on device (Mac or tablet) runs the relay. It's the single source of truth — all orders and state live here.</p>
+                </div>
+                <div class="bg-white rounded-2xl p-6 border border-amber-200 shadow-sm text-center">
+                    <div class="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center text-2xl mx-auto mb-4">📡</div>
+                    <h3 class="font-bold text-slate-900 mb-2 brand">WiFi network</h3>
+                    <p class="text-sm text-slate-500">All service devices connect over your in-venue WiFi. No internet required. Dedicated tablets for each role stay on WiFi permanently.</p>
+                </div>
+                <div class="bg-white rounded-2xl p-6 border border-amber-200 shadow-sm text-center">
+                    <div class="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center text-2xl mx-auto mb-4">⚡</div>
+                    <h3 class="font-bold text-slate-900 mb-2 brand">Instant sync</h3>
+                    <p class="text-sm text-slate-500">Orders, table status, kitchen tickets, and payments sync across all screens in real time. No polling, no refresh — WebSocket push.</p>
+                </div>
+            </div>
+
+            <div class="bg-slate-950 rounded-3xl p-8 text-white">
+                <div class="grid md:grid-cols-2 gap-8 items-center">
+                    <div>
+                        <p class="text-amber-400 text-xs font-bold uppercase tracking-widest mb-3">Recommended setup</p>
+                        <h3 class="text-2xl font-bold mb-4 brand">Hardware that works</h3>
+                        <div class="space-y-3 text-sm text-slate-300">
+                            <div class="flex items-start gap-3">
+                                <span class="text-amber-400 font-bold mt-0.5">→</span>
+                                <div><span class="text-white font-semibold">Master station:</span> Mac Mini (always on, plugged in, runs the relay 24/7)</div>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <span class="text-amber-400 font-bold mt-0.5">→</span>
+                                <div><span class="text-white font-semibold">Waiter / order taking:</span> Samsung Galaxy Tab A8 or iPad mini (WiFi-only model)</div>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <span class="text-amber-400 font-bold mt-0.5">→</span>
+                                <div><span class="text-white font-semibold">Kitchen display:</span> Samsung Galaxy Tab A9+ 11" wall-mounted, always powered</div>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <span class="text-amber-400 font-bold mt-0.5">→</span>
+                                <div><span class="text-white font-semibold">Bar display:</span> Amazon Fire HD 10 — affordable, plugged in permanently</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="space-y-3 text-sm">
+                        <div class="bg-white/10 rounded-xl p-4">
+                            <p class="text-amber-300 font-semibold mb-1">Why WiFi-only hardware?</p>
+                            <p class="text-slate-300">Devices with mobile data can silently switch networks mid-service, losing sync with the relay. WiFi-only models can't switch — they stay on your network or they stay offline, so you always know the state.</p>
+                        </div>
+                        <div class="bg-white/10 rounded-xl p-4">
+                            <p class="text-amber-300 font-semibold mb-1">What if a device disconnects?</p>
+                            <p class="text-slate-300">An 8-second grace period covers brief WiFi blips. After that, the screen shows a red offline banner and key actions (Send to Kitchen, Mark Done) are disabled until the device reconnects.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- What's included summary -->
+    <section class="py-16 px-5 bg-white">
+        <div class="max-w-4xl mx-auto fade-in">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl font-bold text-slate-900 mb-3 brand">All in one system</h2>
+                <p class="text-lg text-slate-500">No third-party integrations needed for core service operations</p>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div class="bg-amber-50 rounded-2xl p-5 text-center border border-amber-100">
+                    <p class="text-2xl mb-2">🗺️</p>
+                    <p class="font-semibold text-slate-800 text-sm">Table plan</p>
+                </div>
+                <div class="bg-orange-50 rounded-2xl p-5 text-center border border-orange-100">
+                    <p class="text-2xl mb-2">📱</p>
+                    <p class="font-semibold text-slate-800 text-sm">Order taking</p>
+                </div>
+                <div class="bg-amber-50 rounded-2xl p-5 text-center border border-amber-100">
+                    <p class="text-2xl mb-2">🍳</p>
+                    <p class="font-semibold text-slate-800 text-sm">Kitchen display</p>
+                </div>
+                <div class="bg-orange-50 rounded-2xl p-5 text-center border border-orange-100">
+                    <p class="text-2xl mb-2">🛵</p>
+                    <p class="font-semibold text-slate-800 text-sm">Takeaway</p>
+                </div>
+                <div class="bg-amber-50 rounded-2xl p-5 text-center border border-amber-100">
+                    <p class="text-2xl mb-2">📅</p>
+                    <p class="font-semibold text-slate-800 text-sm">Bookings</p>
+                </div>
+                <div class="bg-orange-50 rounded-2xl p-5 text-center border border-orange-100">
+                    <p class="text-2xl mb-2">💳</p>
+                    <p class="font-semibold text-slate-800 text-sm">Payments</p>
+                </div>
+                <div class="bg-amber-50 rounded-2xl p-5 text-center border border-amber-100">
+                    <p class="text-2xl mb-2">📊</p>
+                    <p class="font-semibold text-slate-800 text-sm">Takings reports</p>
+                </div>
+                <div class="bg-orange-50 rounded-2xl p-5 text-center border border-orange-100">
+                    <p class="text-2xl mb-2">📡</p>
+                    <p class="font-semibold text-slate-800 text-sm">Live relay sync</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing -->
+    <section id="pricing" class="py-20 px-5 bg-gradient-to-br from-amber-50 to-orange-50">
+        <div class="max-w-4xl mx-auto fade-in">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-3 brand">Simple, venue-based pricing</h2>
+                <p class="text-lg text-slate-500">One flat monthly fee. Unlimited devices, unlimited staff, all features included.</p>
+            </div>
+            <div class="grid md:grid-cols-2 gap-6">
+
+                <!-- Basic -->
+                <div class="bg-white rounded-3xl border-2 border-amber-200 p-8 shadow-sm relative">
+                    <div class="inline-block bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1 rounded-full mb-5">First venue</div>
+                    <h3 class="text-2xl font-bold text-slate-900 mb-1 brand">Basic</h3>
+                    <div class="flex items-end gap-1 mb-6">
+                        <span class="text-5xl font-bold text-slate-900 brand">£59</span>
+                        <span class="text-slate-400 mb-2">/month</span>
+                    </div>
+                    <ul class="space-y-3 text-sm text-slate-600 mb-8">
+                        <li class="flex items-center gap-2"><span class="text-amber-500 font-bold">✓</span> 1 venue</li>
+                        <li class="flex items-center gap-2"><span class="text-amber-500 font-bold">✓</span> Unlimited devices on the network</li>
+                        <li class="flex items-center gap-2"><span class="text-amber-500 font-bold">✓</span> All features — tables, KDS, takeaway, bookings, payments</li>
+                        <li class="flex items-center gap-2"><span class="text-amber-500 font-bold">✓</span> Works fully offline on your WiFi</li>
+                        <li class="flex items-center gap-2"><span class="text-amber-500 font-bold">✓</span> Cloud backup sync included</li>
+                        <li class="flex items-center gap-2"><span class="text-amber-500 font-bold">✓</span> Android + macOS</li>
+                    </ul>
+                    <a href="#contact" class="block w-full text-center px-6 py-3.5 bg-gradient-to-r from-amber-600 to-orange-500 text-white rounded-xl font-semibold hover:shadow-lg transition-all">Get started</a>
+                </div>
+
+                <!-- Add-on -->
+                <div class="bg-white rounded-3xl border-2 border-slate-200 p-8 shadow-sm">
+                    <div class="inline-block bg-slate-100 text-slate-600 text-xs font-bold px-3 py-1 rounded-full mb-5">Additional venues</div>
+                    <h3 class="text-2xl font-bold text-slate-900 mb-1 brand">Add-on</h3>
+                    <div class="flex items-end gap-1 mb-6">
+                        <span class="text-5xl font-bold text-slate-900 brand">£39</span>
+                        <span class="text-slate-400 mb-2">/month per venue</span>
+                    </div>
+                    <ul class="space-y-3 text-sm text-slate-600 mb-8">
+                        <li class="flex items-center gap-2"><span class="text-slate-400 font-bold">✓</span> Each additional venue after the first</li>
+                        <li class="flex items-center gap-2"><span class="text-slate-400 font-bold">✓</span> Identical feature set to Basic</li>
+                        <li class="flex items-center gap-2"><span class="text-slate-400 font-bold">✓</span> Managed from the same owner account</li>
+                        <li class="flex items-center gap-2"><span class="text-slate-400 font-bold">✓</span> Independent floor plans and menus per venue</li>
+                        <li class="flex items-center gap-2"><span class="text-slate-400 font-bold">✓</span> Separate staff access per location</li>
+                    </ul>
+                    <a href="#contact" class="block w-full text-center px-6 py-3.5 bg-white text-slate-700 rounded-xl font-semibold border-2 border-slate-200 hover:border-amber-300 transition-all">Get in touch</a>
+                </div>
+
+            </div>
+            <p class="text-center text-slate-400 text-sm mt-6">No setup fees. No per-device charges. Cancel any time. Prices exclude VAT.</p>
+        </div>
+    </section>
+
+    <!-- Contact / Get started -->
+    <section id="contact" class="py-24 px-5 bg-gradient-to-br from-slate-950 via-amber-900 to-orange-700 relative overflow-hidden">
+        <div class="absolute inset-0 opacity-10">
+            <svg width="100%" height="100%"><pattern id="p2" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M0 20 Q10 10,20 20 T40 20" fill="none" stroke="white" stroke-width="1"/></pattern><rect width="100%" height="100%" fill="url(#p2)"/></svg>
+        </div>
+        <div class="max-w-xl mx-auto text-center relative z-10">
+            <h2 class="text-4xl md:text-5xl font-bold text-white mb-4 brand">Get KitchenFlow</h2>
+            <p class="text-xl text-white/80 mb-10">Tell us about your venue and we'll get you set up. We handle onboarding personally — no self-signup portals.</p>
+            <form id="contact-form" class="text-left space-y-3 mb-6" onsubmit="handleEnquiry(event)">
+                <div class="grid sm:grid-cols-2 gap-3">
+                    <input id="cf-name" type="text" required placeholder="Your name"
+                        class="w-full px-5 py-4 rounded-xl text-slate-900 font-medium placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400" />
+                    <input id="cf-restaurant" type="text" required placeholder="Restaurant name"
+                        class="w-full px-5 py-4 rounded-xl text-slate-900 font-medium placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400" />
+                </div>
+                <input id="cf-email" type="email" required placeholder="Email address"
+                    class="w-full px-5 py-4 rounded-xl text-slate-900 font-medium placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400" />
+                <textarea id="cf-message" rows="3" placeholder="Anything you'd like to tell us — number of covers, locations, current setup... (optional)"
+                    class="w-full px-5 py-4 rounded-xl text-slate-900 font-medium placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 resize-none"></textarea>
+                <button type="submit" id="cf-btn" class="w-full px-6 py-4 bg-amber-500 hover:bg-amber-400 text-white rounded-xl font-bold transition-all hover:shadow-lg">
+                    Send enquiry
+                </button>
+            </form>
+            <p id="cf-success" class="text-white/80 text-base hidden mb-4">Thanks — we'll be in touch within one business day.</p>
+            <p id="cf-error" class="text-red-300 text-sm hidden mb-4"></p>
+            <p class="text-white/40 text-sm">Or email us directly at <a href="mailto:admin@metiflow.com" class="text-amber-300 hover:text-amber-200">admin@metiflow.com</a></p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-slate-950 text-white py-10 px-5">
+        <div class="max-w-5xl mx-auto">
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-6 mb-8">
+                <a href="/" class="flex items-center gap-2.5">
+                    <svg width="26" height="26" viewBox="0 0 140 140">
+                        <path d="M30 70 Q45 50,60 70 T90 70 T120 70" fill="none" stroke="white" stroke-width="9" stroke-linecap="round"/>
+                        <circle cx="35" cy="70" r="7" fill="white"/>
+                        <circle cx="115" cy="70" r="7" fill="#06b6d4"/>
+                    </svg>
+                    <span class="text-base font-bold brand">metiflow</span>
+                </a>
+                <div class="flex flex-wrap justify-center gap-5 text-slate-400 text-sm">
+                    <a href="/" class="hover:text-white transition-colors">Home</a>
+                    <a href="/traderflow/" class="hover:text-white transition-colors">TraderFlow</a>
+                    <a href="/terms/" class="hover:text-white transition-colors">Terms</a>
+                    <a href="/privacy/" class="hover:text-white transition-colors">Privacy</a>
+                    <a href="mailto:admin@metiflow.com" class="hover:text-white transition-colors">Contact</a>
+                </div>
+            </div>
+            <div class="border-t border-slate-800 pt-8 text-center text-slate-500 text-sm">
+                <p class="mb-2">Metiflow Group Ltd &middot; Registered in England and Wales &middot; Company No: XXXXXXXX</p>
+                <p>&copy; 2026 Metiflow. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // ── Set this to your deployed TraderFlow URL ──────────────────────────
+        const TRADERFLOW_URL = 'https://YOUR-TRADERFLOW-DOMAIN.vercel.app';
+        // ─────────────────────────────────────────────────────────────────────
+
+        const obs = new IntersectionObserver(entries => entries.forEach(e => {
+            if (e.isIntersecting) e.target.classList.add('visible');
+        }), { threshold: 0.1, rootMargin: '0px 0px -20px 0px' });
+        document.querySelectorAll('.fade-in').forEach(el => obs.observe(el));
+
+        async function handleEnquiry(e) {
+            e.preventDefault();
+            const btn = document.getElementById('cf-btn');
+            const success = document.getElementById('cf-success');
+            const errEl = document.getElementById('cf-error');
+            btn.disabled = true;
+            btn.textContent = 'Sending…';
+            errEl.classList.add('hidden');
+
+            try {
+                const res = await fetch(`${TRADERFLOW_URL}/api/kitchenflow-enquiry`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: document.getElementById('cf-name').value,
+                        restaurant: document.getElementById('cf-restaurant').value,
+                        email: document.getElementById('cf-email').value,
+                        message: document.getElementById('cf-message').value,
+                    }),
+                });
+                if (!res.ok) throw new Error('Server error');
+                document.getElementById('contact-form').classList.add('hidden');
+                success.classList.remove('hidden');
+            } catch {
+                errEl.textContent = 'Something went wrong — please email us directly at admin@metiflow.com';
+                errEl.classList.remove('hidden');
+                btn.disabled = false;
+                btn.textContent = 'Send enquiry';
+            }
+        }
+    </script>
+    <script src="/assets/cookie-consent.js"></script>
+</body>
+</html>

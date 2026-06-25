@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TraderFlow — Trade management by Metiflow</title>
+    <meta name="description" content="TraderFlow is the complete operating system for trade businesses. Quotes, jobs, scheduling, materials, purchase orders, expenses, RAMS, invoicing, and KPIs — all in one place.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
+        * { font-family: 'Manrope', sans-serif; }
+        h1, h2, h3, .brand { font-family: 'Space Grotesk', sans-serif; }
+        .nav-blur { backdrop-filter: blur(12px); background: rgba(248,250,252,0.9); }
+        .gradient-text {
+            background: linear-gradient(135deg, #0c4a6e 0%, #0369a1 50%, #0f766e 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        body {
+            background:
+                radial-gradient(circle at top left, rgba(14,165,233,0.08), transparent 30%),
+                radial-gradient(circle at top right, rgba(20,184,166,0.08), transparent 28%),
+                #f8fafc;
+        }
+        .fade-in { opacity: 0; transform: translateY(18px); transition: opacity 0.6s ease, transform 0.6s ease; }
+        .fade-in.visible { opacity: 1; transform: translateY(0); }
+        .card-hover { transition: all 0.25s ease; }
+        .card-hover:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(14,165,233,0.12); }
+    </style>
+</head>
+<body class="text-slate-900">
+
+    <!-- Nav -->
+    <nav class="fixed top-0 w-full z-50 nav-blur border-b border-slate-200/80">
+        <div class="max-w-6xl mx-auto px-5 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <a href="/" class="flex items-center gap-2 text-slate-400 hover:text-slate-700 transition-colors text-sm font-semibold">
+                    <svg width="22" height="22" viewBox="0 0 140 140">
+                        <path d="M30 70 Q45 50,60 70 T90 70 T120 70" fill="none" stroke="#4f46e5" stroke-width="9" stroke-linecap="round"/>
+                        <circle cx="35" cy="70" r="7" fill="#4f46e5"/>
+                        <circle cx="115" cy="70" r="7" fill="#06b6d4"/>
+                    </svg>
+                    metiflow
+                </a>
+                <span class="text-slate-300">/</span>
+                <span class="text-sm font-bold text-sky-700">TraderFlow</span>
+            </div>
+            <div class="hidden md:flex items-center gap-6 text-sm font-semibold text-slate-500">
+                <a href="#features" class="hover:text-slate-900 transition-colors">Features</a>
+                <a href="#pricing" class="hover:text-slate-900 transition-colors">Pricing</a>
+                <a href="https://trader.metiflow.com" target="_blank" rel="noopener" class="hover:text-slate-900 transition-colors">Login</a>
+                <a href="https://trader.metiflow.com/register" target="_blank" rel="noopener" class="px-4 py-2 bg-gradient-to-r from-sky-600 to-teal-500 text-white rounded-lg font-medium hover:shadow-md transition-all">Get started free</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="min-h-screen flex items-center justify-center pt-20 px-5">
+        <div class="max-w-6xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
+            <div>
+                <div class="inline-flex items-center gap-2 bg-sky-50 border border-sky-200 rounded-full px-3 py-1.5 mb-6">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    <span class="text-xs font-bold text-sky-700">Live now at trader.metiflow.com</span>
+                </div>
+                <h1 class="text-5xl md:text-6xl font-bold leading-tight mb-5 brand">
+                    The operating system<br>
+                    <span class="gradient-text">for trade businesses.</span>
+                </h1>
+                <p class="text-xl text-slate-500 leading-relaxed mb-8 max-w-lg">
+                    From the first customer call to final invoice, TraderFlow handles the complete job lifecycle. Built around how electricians, plumbers, builders, and field service teams actually work.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-3 mb-10">
+                    <a href="https://trader.metiflow.com/register" target="_blank" rel="noopener" class="px-6 py-3.5 bg-gradient-to-r from-sky-600 to-teal-500 text-white rounded-xl font-semibold hover:shadow-lg transition-all text-center">Get started free</a>
+                    <a href="https://trader.metiflow.com" target="_blank" rel="noopener" class="px-6 py-3.5 bg-white text-slate-700 rounded-xl font-semibold border-2 border-slate-200 hover:border-sky-300 transition-all text-center">Login</a>
+                </div>
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+                        <p class="text-xs text-slate-400 mb-1">Businesses using</p>
+                        <p class="font-bold text-slate-900">TraderFlow</p>
+                    </div>
+                    <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+                        <p class="text-xs text-slate-400 mb-1">Setup time</p>
+                        <p class="font-bold text-slate-900">Under 5 min</p>
+                    </div>
+                    <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+                        <p class="text-xs text-slate-400 mb-1">Team size</p>
+                        <p class="font-bold text-slate-900">Solo to unlimited</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-3xl border border-sky-100 p-7 shadow-xl fade-in">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <p class="text-xs font-bold tracking-widest text-sky-700 uppercase mb-1">All included</p>
+                        <h2 class="text-2xl font-bold text-slate-900 brand">What TraderFlow covers</h2>
+                    </div>
+                </div>
+                <div class="bg-slate-950 rounded-2xl p-5 text-white mb-4">
+                    <p class="text-slate-300 text-sm mb-2">Everything in one system</p>
+                    <p class="font-semibold text-lg">Quotes, jobs, calendar, materials, purchase orders, expenses, RAMS, invoicing, and KPI dashboards.</p>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-sky-50 rounded-xl p-4 border border-sky-100">
+                        <p class="text-xs font-bold text-sky-700 mb-1">Built for</p>
+                        <p class="text-sm text-slate-600">Electricians, plumbers, builders, HVAC, carpenters, landscapers, and all field service businesses</p>
+                    </div>
+                    <div class="bg-teal-50 rounded-xl p-4 border border-teal-100">
+                        <p class="text-xs font-bold text-teal-700 mb-1">Scales with you</p>
+                        <p class="text-sm text-slate-600">Solo to unlimited team members. Multi-org, role-based permissions, seamless team management</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How trade teams operate section -->
+    <section class="py-20 px-5 bg-gradient-to-br from-sky-50 to-teal-50">
+        <div class="max-w-5xl mx-auto">
+            <div class="grid lg:grid-cols-2 gap-10 items-start fade-in">
+                <div>
+                    <p class="text-xs font-bold tracking-widest text-sky-700 uppercase mb-3">Built around how you work</p>
+                    <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-4 brand">The full management loop — in one place.</h2>
+                    <p class="text-lg text-slate-600 leading-relaxed">From first customer contact to job completion and payment, TraderFlow handles every step. Scheduling, materials, risk assessments, and team coordination are all connected — no context switching, no scattered data.</p>
+                </div>
+                <div class="grid sm:grid-cols-2 gap-4">
+                    <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+                        <p class="text-xs text-slate-400 mb-2 uppercase tracking-wide font-semibold">Commercial</p>
+                        <p class="font-bold text-slate-900">Quotes, customers, invoices. Recurring work visibility and revenue tracking.</p>
+                    </div>
+                    <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+                        <p class="text-xs text-slate-400 mb-2 uppercase tracking-wide font-semibold">Operational</p>
+                        <p class="font-bold text-slate-900">Jobs, calendar scheduling, team assignments, live status tracking.</p>
+                    </div>
+                    <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+                        <p class="text-xs text-slate-400 mb-2 uppercase tracking-wide font-semibold">Site readiness</p>
+                        <p class="font-bold text-slate-900">Materials, POs, expenses, RAMS approvals. Everything before work starts.</p>
+                    </div>
+                    <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+                        <p class="text-xs text-slate-400 mb-2 uppercase tracking-wide font-semibold">Management</p>
+                        <p class="font-bold text-slate-900">KPIs, dashboards, role-based access, multi-organisation support.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section id="features" class="py-20 px-5 bg-white">
+        <div class="max-w-5xl mx-auto">
+            <div class="text-center mb-12 fade-in">
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-3 brand">Everything included, live now</h2>
+                <p class="text-lg text-slate-500">All features available on every plan</p>
+            </div>
+            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                <div class="bg-white rounded-2xl p-6 border-2 border-indigo-100 shadow-sm card-hover fade-in">
+                    <div class="text-3xl mb-4">📋</div>
+                    <h3 class="text-lg font-bold text-slate-800 mb-2 brand">Professional Quotes</h3>
+                    <p class="text-slate-500 text-sm">Create quotes fast with company defaults. Searchable customer lookup. Convert approved quotes straight to jobs. Full project context end-to-end.</p>
+                </div>
+                <div class="bg-white rounded-2xl p-6 border-2 border-cyan-100 shadow-sm card-hover fade-in">
+                    <div class="text-3xl mb-4">✅</div>
+                    <h3 class="text-lg font-bold text-slate-800 mb-2 brand">Full Job Lifecycle</h3>
+                    <p class="text-slate-500 text-sm">Jobs flow through planning → ready → scheduled → in-progress → completed. Assign team members, manage readiness checklists, track status in real-time.</p>
+                </div>
+                <div class="bg-white rounded-2xl p-6 border-2 border-purple-100 shadow-sm card-hover fade-in">
+                    <div class="text-3xl mb-4">💰</div>
+                    <h3 class="text-lg font-bold text-slate-800 mb-2 brand">Auto-Invoice & KPIs</h3>
+                    <p class="text-slate-500 text-sm">Invoices generate automatically on job completion. Track revenue by customer and period. Monitor job counts, conversion rates, and performance.</p>
+                </div>
+                <div class="bg-white rounded-2xl p-6 border-2 border-blue-100 shadow-sm card-hover fade-in">
+                    <div class="text-3xl mb-4">📅</div>
+                    <h3 class="text-lg font-bold text-slate-800 mb-2 brand">Calendar & Team Scheduling</h3>
+                    <p class="text-slate-500 text-sm">Week/month/day views with drag-and-drop scheduling. Unscheduled jobs as external cards. See team availability and job details in one view.</p>
+                </div>
+                <div class="bg-white rounded-2xl p-6 border-2 border-emerald-100 shadow-sm card-hover fade-in">
+                    <div class="text-3xl mb-4">🛠️</div>
+                    <h3 class="text-lg font-bold text-slate-800 mb-2 brand">Materials & Purchase Orders</h3>
+                    <p class="text-slate-500 text-sm">Track materials, unit pricing, and suppliers. POs with full status workflow from draft to delivered. Attachments and approval workflows included.</p>
+                </div>
+                <div class="bg-white rounded-2xl p-6 border-2 border-amber-100 shadow-sm card-hover fade-in">
+                    <div class="text-3xl mb-4">⚡</div>
+                    <h3 class="text-lg font-bold text-slate-800 mb-2 brand">RAMS & Risk Management</h3>
+                    <p class="text-slate-500 text-sm">Attach RAMS templates to jobs. Question types: yes/no, text, checklists, risk matrices. Calculate risk scores automatically and route through approvals.</p>
+                </div>
+                <div class="bg-white rounded-2xl p-6 border-2 border-rose-100 shadow-sm card-hover fade-in">
+                    <div class="text-3xl mb-4">🧾</div>
+                    <h3 class="text-lg font-bold text-slate-800 mb-2 brand">Expense Tracking</h3>
+                    <p class="text-slate-500 text-sm">Log site expenses, upload receipt photos, route through approval. Full job cost analysis with complete visibility from pending to approved.</p>
+                </div>
+                <div class="bg-white rounded-2xl p-6 border-2 border-teal-100 shadow-sm card-hover fade-in">
+                    <div class="text-3xl mb-4">👥</div>
+                    <h3 class="text-lg font-bold text-slate-800 mb-2 brand">Team & Permissions</h3>
+                    <p class="text-slate-500 text-sm">Multi-organisation support with owner/admin/member roles. Granular permissions per feature. Scales from solo to unlimited teams on Pro.</p>
+                </div>
+                <div class="bg-white rounded-2xl p-6 border-2 border-indigo-100 shadow-sm card-hover fade-in">
+                    <div class="text-3xl mb-4">📸</div>
+                    <h3 class="text-lg font-bold text-slate-800 mb-2 brand">Job Documentation</h3>
+                    <p class="text-slate-500 text-sm">Attach photos by type (before/after/site condition). Time tracking via job sessions. All visual and operational context tied to the job.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Who it's for -->
+    <section class="py-16 px-5 bg-slate-50">
+        <div class="max-w-4xl mx-auto fade-in">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl font-bold text-slate-900 mb-3 brand">Built for trade-led businesses</h2>
+                <p class="text-lg text-slate-500">From one-person operations to growing crews</p>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-10">
+                <div class="bg-white rounded-xl p-4 text-center border border-slate-200 shadow-sm"><p class="font-semibold text-slate-700">Electricians</p></div>
+                <div class="bg-white rounded-xl p-4 text-center border border-slate-200 shadow-sm"><p class="font-semibold text-slate-700">Plumbers</p></div>
+                <div class="bg-white rounded-xl p-4 text-center border border-slate-200 shadow-sm"><p class="font-semibold text-slate-700">Builders</p></div>
+                <div class="bg-white rounded-xl p-4 text-center border border-slate-200 shadow-sm"><p class="font-semibold text-slate-700">Carpenters</p></div>
+                <div class="bg-white rounded-xl p-4 text-center border border-slate-200 shadow-sm"><p class="font-semibold text-slate-700">HVAC</p></div>
+                <div class="bg-white rounded-xl p-4 text-center border border-slate-200 shadow-sm"><p class="font-semibold text-slate-700">Landscapers</p></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing -->
+    <section id="pricing" class="py-20 px-5 bg-white">
+        <div class="max-w-5xl mx-auto">
+            <div class="text-center mb-12 fade-in">
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-3 brand">Transparent pricing</h2>
+                <p class="text-lg text-slate-500">All tiers include every feature. Pricing varies by team size.</p>
+            </div>
+            <div class="grid md:grid-cols-3 gap-5">
+                <div class="bg-white rounded-2xl border-2 border-slate-200 p-8 shadow-sm hover:border-sky-300 transition-all fade-in">
+                    <h3 class="text-2xl font-bold text-slate-900 mb-1 brand">Solo</h3>
+                    <p class="text-slate-500 text-sm mb-6">For sole traders and freelancers</p>
+                    <p class="text-4xl font-bold text-slate-900 mb-1">TBD</p>
+                    <p class="text-slate-400 text-sm mb-8">per month</p>
+                    <ul class="space-y-3 mb-8 text-sm">
+                        <li class="flex items-center gap-2"><span class="text-teal-500 font-bold">✓</span> 1 team member</li>
+                        <li class="flex items-center gap-2"><span class="text-teal-500 font-bold">✓</span> All features</li>
+                        <li class="flex items-center gap-2"><span class="text-teal-500 font-bold">✓</span> Community support</li>
+                    </ul>
+                    <a href="https://trader.metiflow.com/register" target="_blank" rel="noopener" class="block w-full py-3 bg-slate-100 text-slate-900 rounded-xl font-semibold hover:bg-slate-200 transition-all text-center">Get started</a>
+                </div>
+                <div class="bg-white rounded-2xl border-2 border-sky-400 p-8 shadow-md relative fade-in">
+                    <div class="absolute -top-3.5 left-6 bg-gradient-to-r from-sky-500 to-teal-500 text-white px-3 py-1 rounded-full text-xs font-bold">Most popular</div>
+                    <h3 class="text-2xl font-bold text-slate-900 mb-1 brand">Starter</h3>
+                    <p class="text-slate-500 text-sm mb-6">For small teams that are growing</p>
+                    <p class="text-4xl font-bold text-slate-900 mb-1">TBD</p>
+                    <p class="text-slate-400 text-sm mb-8">per month</p>
+                    <ul class="space-y-3 mb-8 text-sm">
+                        <li class="flex items-center gap-2"><span class="text-sky-500 font-bold">✓</span> Up to 5 team members</li>
+                        <li class="flex items-center gap-2"><span class="text-sky-500 font-bold">✓</span> All features</li>
+                        <li class="flex items-center gap-2"><span class="text-sky-500 font-bold">✓</span> Custom branding</li>
+                        <li class="flex items-center gap-2"><span class="text-sky-500 font-bold">✓</span> Priority support</li>
+                    </ul>
+                    <a href="https://trader.metiflow.com/register" target="_blank" rel="noopener" class="block w-full py-3 bg-gradient-to-r from-sky-500 to-teal-500 text-white rounded-xl font-semibold hover:shadow-lg transition-all text-center">Get started</a>
+                </div>
+                <div class="bg-white rounded-2xl border-2 border-slate-200 p-8 shadow-sm hover:border-teal-300 transition-all fade-in">
+                    <h3 class="text-2xl font-bold text-slate-900 mb-1 brand">Pro</h3>
+                    <p class="text-slate-500 text-sm mb-6">For scaling trade companies</p>
+                    <p class="text-4xl font-bold text-slate-900 mb-1">TBD</p>
+                    <p class="text-slate-400 text-sm mb-8">per month</p>
+                    <ul class="space-y-3 mb-8 text-sm">
+                        <li class="flex items-center gap-2"><span class="text-teal-500 font-bold">✓</span> Unlimited team members</li>
+                        <li class="flex items-center gap-2"><span class="text-teal-500 font-bold">✓</span> All features</li>
+                        <li class="flex items-center gap-2"><span class="text-teal-500 font-bold">✓</span> Advanced branding & API</li>
+                        <li class="flex items-center gap-2"><span class="text-teal-500 font-bold">✓</span> 24/7 dedicated support</li>
+                    </ul>
+                    <a href="https://trader.metiflow.com/register" target="_blank" rel="noopener" class="block w-full py-3 bg-slate-100 text-slate-900 rounded-xl font-semibold hover:bg-slate-200 transition-all text-center">Get started</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- What's coming -->
+    <section class="py-16 px-5 bg-gradient-to-br from-slate-50 to-blue-50">
+        <div class="max-w-4xl mx-auto fade-in">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl font-bold text-slate-900 mb-3 brand">Coming next</h2>
+                <p class="text-lg text-slate-500">Features trade teams have asked for</p>
+            </div>
+            <div class="grid sm:grid-cols-2 gap-4">
+                <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+                    <div class="flex items-start gap-3 mb-2">
+                        <span class="bg-slate-100 text-slate-600 border border-slate-200 rounded px-2 py-0.5 text-xs font-semibold">Coming</span>
+                        <p class="font-semibold text-slate-700">Invoice PDF & Email</p>
+                    </div>
+                    <p class="text-sm text-slate-500">Generate professional invoice PDFs and send directly to customers via email.</p>
+                </div>
+                <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+                    <div class="flex items-start gap-3 mb-2">
+                        <span class="bg-slate-100 text-slate-600 border border-slate-200 rounded px-2 py-0.5 text-xs font-semibold">Coming</span>
+                        <p class="font-semibold text-slate-700">Gantt Chart</p>
+                    </div>
+                    <p class="text-sm text-slate-500">Visual timeline view of project dependencies and team workload.</p>
+                </div>
+                <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+                    <div class="flex items-start gap-3 mb-2">
+                        <span class="bg-slate-100 text-slate-600 border border-slate-200 rounded px-2 py-0.5 text-xs font-semibold">Coming</span>
+                        <p class="font-semibold text-slate-700">Recurring Jobs</p>
+                    </div>
+                    <p class="text-sm text-slate-500">Set up annual or recurring work with smart reminders for maintenance services.</p>
+                </div>
+                <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+                    <div class="flex items-start gap-3 mb-2">
+                        <span class="bg-slate-100 text-slate-600 border border-slate-200 rounded px-2 py-0.5 text-xs font-semibold">Coming</span>
+                        <p class="font-semibold text-slate-700">Advanced Reporting</p>
+                    </div>
+                    <p class="text-sm text-slate-500">Extended KPI tracking, custom dashboards, and deeper business insights.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="py-24 px-5 bg-gradient-to-br from-slate-950 via-sky-900 to-teal-700 relative overflow-hidden">
+        <div class="absolute inset-0 opacity-10">
+            <svg width="100%" height="100%"><pattern id="p" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M0 20 Q10 10,20 20 T40 20" fill="none" stroke="white" stroke-width="1"/></pattern><rect width="100%" height="100%" fill="url(#p)"/></svg>
+        </div>
+        <div class="max-w-2xl mx-auto text-center relative z-10">
+            <h2 class="text-4xl md:text-5xl font-bold text-white mb-4 brand">Ready to get started?</h2>
+            <p class="text-xl text-white/80 mb-10">TraderFlow is live now. Register your organisation and start managing your trade business today.</p>
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+                <a href="https://trader.metiflow.com/register" target="_blank" rel="noopener" class="px-8 py-4 bg-white text-sky-800 rounded-xl font-bold text-lg hover:shadow-2xl transition-all">Register free</a>
+                <a href="https://trader.metiflow.com" target="_blank" rel="noopener" class="px-8 py-4 bg-white/10 text-white rounded-xl font-bold text-lg border-2 border-white/30 hover:bg-white/20 transition-all">Login</a>
+            </div>
+            <p class="text-white/50 mt-6 text-sm">trader.metiflow.com &middot; No credit card required</p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-slate-950 text-white py-10 px-5">
+        <div class="max-w-5xl mx-auto">
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-6 mb-8">
+                <a href="/" class="flex items-center gap-2.5">
+                    <svg width="26" height="26" viewBox="0 0 140 140">
+                        <path d="M30 70 Q45 50,60 70 T90 70 T120 70" fill="none" stroke="white" stroke-width="9" stroke-linecap="round"/>
+                        <circle cx="35" cy="70" r="7" fill="white"/>
+                        <circle cx="115" cy="70" r="7" fill="#06b6d4"/>
+                    </svg>
+                    <span class="text-base font-bold brand">metiflow</span>
+                </a>
+                <div class="flex flex-wrap justify-center gap-5 text-slate-400 text-sm">
+                    <a href="/" class="hover:text-white transition-colors">Home</a>
+                    <a href="/restaurant/" class="hover:text-white transition-colors">KitchenFlow</a>
+                    <a href="/terms/" class="hover:text-white transition-colors">Terms</a>
+                    <a href="/privacy/" class="hover:text-white transition-colors">Privacy</a>
+                    <a href="mailto:admin@metiflow.com" class="hover:text-white transition-colors">Contact</a>
+                </div>
+            </div>
+            <div class="border-t border-slate-800 pt-8 text-center text-slate-500 text-sm">
+                <p class="mb-2">Metiflow Group Ltd &middot; Registered in England and Wales &middot; Company No: XXXXXXXX</p>
+                <p>&copy; 2026 Metiflow. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const obs = new IntersectionObserver(entries => entries.forEach(e => {
+            if (e.isIntersecting) e.target.classList.add('visible');
+        }), { threshold: 0.1, rootMargin: '0px 0px -20px 0px' });
+        document.querySelectorAll('.fade-in').forEach(el => obs.observe(el));
+    </script>
+    <script src="/assets/cookie-consent.js"></script>
+</body>
+</html>

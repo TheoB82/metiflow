@@ -295,51 +295,127 @@
 
     <!-- Pricing -->
     <section id="pricing" class="py-20 px-5 bg-gradient-to-br from-amber-50 to-orange-50">
-        <div class="max-w-4xl mx-auto fade-in">
+        <div class="max-w-5xl mx-auto fade-in">
             <div class="text-center mb-12">
                 <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-3 brand">Simple, venue-based pricing</h2>
-                <p class="text-lg text-slate-500">One flat monthly fee. Unlimited devices, unlimited staff, all features included.</p>
+                <p class="text-lg text-slate-500">One flat monthly fee. Unlimited devices, unlimited staff. Choose what fits your operation.</p>
             </div>
-            <div class="grid md:grid-cols-2 gap-6">
 
-                <!-- Basic -->
-                <div class="bg-white rounded-3xl border-2 border-amber-200 p-8 shadow-sm relative">
-                    <div class="inline-block bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1 rounded-full mb-5">First venue</div>
-                    <h3 class="text-2xl font-bold text-slate-900 mb-1 brand">Basic</h3>
-                    <div class="flex items-end gap-1 mb-6">
-                        <span class="text-5xl font-bold text-slate-900 brand">£59</span>
-                        <span class="text-slate-400 mb-2">/month</span>
-                    </div>
-                    <ul class="space-y-3 text-sm text-slate-600 mb-8">
-                        <li class="flex items-center gap-2"><span class="text-amber-500 font-bold">✓</span> 1 venue</li>
-                        <li class="flex items-center gap-2"><span class="text-amber-500 font-bold">✓</span> Unlimited devices on the network</li>
-                        <li class="flex items-center gap-2"><span class="text-amber-500 font-bold">✓</span> All features — tables, KDS, takeaway, bookings, payments</li>
-                        <li class="flex items-center gap-2"><span class="text-amber-500 font-bold">✓</span> Works fully offline on your WiFi</li>
-                        <li class="flex items-center gap-2"><span class="text-amber-500 font-bold">✓</span> Cloud backup sync included</li>
-                        <li class="flex items-center gap-2"><span class="text-amber-500 font-bold">✓</span> Android + macOS</li>
-                    </ul>
-                    <a href="#contact" class="block w-full text-center px-6 py-3.5 bg-gradient-to-r from-amber-600 to-orange-500 text-white rounded-xl font-semibold hover:shadow-lg transition-all">Get started</a>
+            <!-- Toggle explainer -->
+            <div class="flex justify-center mb-10">
+                <div class="inline-flex items-center gap-3 bg-white border border-slate-200 rounded-2xl px-6 py-3 text-sm text-slate-600 shadow-sm">
+                    <span class="font-semibold text-slate-800">Local only</span>
+                    <span class="text-slate-300">·</span>
+                    <span>Runs entirely on your WiFi — no internet needed during service</span>
+                    <span class="mx-2 text-slate-200">|</span>
+                    <span class="font-semibold text-amber-700">+ Online</span>
+                    <span class="text-slate-300">·</span>
+                    <span>Adds cloud backup of orders and menu, accessible from anywhere</span>
                 </div>
-
-                <!-- Add-on -->
-                <div class="bg-white rounded-3xl border-2 border-slate-200 p-8 shadow-sm">
-                    <div class="inline-block bg-slate-100 text-slate-600 text-xs font-bold px-3 py-1 rounded-full mb-5">Additional venues</div>
-                    <h3 class="text-2xl font-bold text-slate-900 mb-1 brand">Add-on</h3>
-                    <div class="flex items-end gap-1 mb-6">
-                        <span class="text-5xl font-bold text-slate-900 brand">£39</span>
-                        <span class="text-slate-400 mb-2">/month per venue</span>
-                    </div>
-                    <ul class="space-y-3 text-sm text-slate-600 mb-8">
-                        <li class="flex items-center gap-2"><span class="text-slate-400 font-bold">✓</span> Each additional venue after the first</li>
-                        <li class="flex items-center gap-2"><span class="text-slate-400 font-bold">✓</span> Identical feature set to Basic</li>
-                        <li class="flex items-center gap-2"><span class="text-slate-400 font-bold">✓</span> Managed from the same owner account</li>
-                        <li class="flex items-center gap-2"><span class="text-slate-400 font-bold">✓</span> Independent floor plans and menus per venue</li>
-                        <li class="flex items-center gap-2"><span class="text-slate-400 font-bold">✓</span> Separate staff access per location</li>
-                    </ul>
-                    <a href="#contact" class="block w-full text-center px-6 py-3.5 bg-white text-slate-700 rounded-xl font-semibold border-2 border-slate-200 hover:border-amber-300 transition-all">Get in touch</a>
-                </div>
-
             </div>
+
+            <!-- Takeaway row -->
+            <div class="mb-4">
+                <p class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3 px-1">Takeaway &amp; collection</p>
+                <div class="grid md:grid-cols-2 gap-5">
+
+                    <div class="bg-white rounded-2xl border-2 border-sky-100 p-7 shadow-sm card-hover">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="inline-block bg-sky-50 text-sky-700 text-xs font-bold px-3 py-1 rounded-full">Local only</div>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-900 mb-1 brand">Takeaway</h3>
+                        <div class="flex items-end gap-1 mb-5">
+                            <span class="text-4xl font-bold text-slate-900 brand">£21</span>
+                            <span class="text-slate-400 mb-1">/month</span>
+                        </div>
+                        <ul class="space-y-2.5 text-sm text-slate-600 mb-6">
+                            <li class="flex items-start gap-2"><span class="text-sky-500 font-bold mt-0.5">✓</span> Takeaway order screen + KDS</li>
+                            <li class="flex items-start gap-2"><span class="text-sky-500 font-bold mt-0.5">✓</span> Modifiers, scheduling, delivery &amp; collection</li>
+                            <li class="flex items-start gap-2"><span class="text-sky-500 font-bold mt-0.5">✓</span> Live WiFi sync across all devices</li>
+                            <li class="flex items-start gap-2"><span class="text-sky-500 font-bold mt-0.5">✓</span> Payments and daily takings</li>
+                            <li class="flex items-start gap-2"><span class="text-slate-300 font-bold mt-0.5">–</span> <span class="text-slate-400">No cloud backup</span></li>
+                        </ul>
+                        <a href="#contact" class="block w-full text-center px-5 py-3 bg-gradient-to-r from-sky-500 to-cyan-500 text-white rounded-xl font-semibold hover:shadow-lg transition-all">Get started</a>
+                    </div>
+
+                    <div class="bg-white rounded-2xl border-2 border-amber-200 p-7 shadow-sm card-hover relative">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="inline-block bg-amber-100 text-amber-700 text-xs font-bold px-3 py-1 rounded-full">+ Online backup</div>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-900 mb-1 brand">Takeaway Plus</h3>
+                        <div class="flex items-end gap-1 mb-5">
+                            <span class="text-4xl font-bold text-slate-900 brand">£25</span>
+                            <span class="text-slate-400 mb-1">/month</span>
+                        </div>
+                        <ul class="space-y-2.5 text-sm text-slate-600 mb-6">
+                            <li class="flex items-start gap-2"><span class="text-amber-500 font-bold mt-0.5">✓</span> Everything in Takeaway</li>
+                            <li class="flex items-start gap-2"><span class="text-amber-500 font-bold mt-0.5">✓</span> Cloud order history — view past orders on any device</li>
+                            <li class="flex items-start gap-2"><span class="text-amber-500 font-bold mt-0.5">✓</span> Menu backed up to cloud</li>
+                            <li class="flex items-start gap-2"><span class="text-amber-500 font-bold mt-0.5">✓</span> New devices sync your menu on first login</li>
+                        </ul>
+                        <a href="#contact" class="block w-full text-center px-5 py-3 bg-gradient-to-r from-amber-600 to-orange-500 text-white rounded-xl font-semibold hover:shadow-lg transition-all">Get started</a>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Restaurant row -->
+            <div class="mb-8">
+                <p class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3 px-1 mt-8">Restaurant &amp; full service</p>
+                <div class="grid md:grid-cols-2 gap-5">
+
+                    <div class="bg-white rounded-2xl border-2 border-orange-100 p-7 shadow-sm card-hover">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="inline-block bg-orange-50 text-orange-700 text-xs font-bold px-3 py-1 rounded-full">Local only</div>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-900 mb-1 brand">Restaurant</h3>
+                        <div class="flex items-end gap-1 mb-5">
+                            <span class="text-4xl font-bold text-slate-900 brand">£49</span>
+                            <span class="text-slate-400 mb-1">/month</span>
+                        </div>
+                        <ul class="space-y-2.5 text-sm text-slate-600 mb-6">
+                            <li class="flex items-start gap-2"><span class="text-orange-500 font-bold mt-0.5">✓</span> Table plan, orders, KDS, payments</li>
+                            <li class="flex items-start gap-2"><span class="text-orange-500 font-bold mt-0.5">✓</span> Reservations and booking management</li>
+                            <li class="flex items-start gap-2"><span class="text-orange-500 font-bold mt-0.5">✓</span> Takeaway &amp; pre-orders included</li>
+                            <li class="flex items-start gap-2"><span class="text-orange-500 font-bold mt-0.5">✓</span> Live WiFi sync — unlimited devices &amp; staff</li>
+                            <li class="flex items-start gap-2"><span class="text-slate-300 font-bold mt-0.5">–</span> <span class="text-slate-400">No cloud backup</span></li>
+                        </ul>
+                        <a href="#contact" class="block w-full text-center px-5 py-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl font-semibold hover:shadow-lg transition-all">Get started</a>
+                    </div>
+
+                    <div class="bg-white rounded-2xl border-2 border-amber-300 p-7 shadow-sm card-hover relative">
+                        <div class="absolute -top-3 left-7">
+                            <span class="bg-amber-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow">Most popular</span>
+                        </div>
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="inline-block bg-amber-100 text-amber-700 text-xs font-bold px-3 py-1 rounded-full">+ Online backup</div>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-900 mb-1 brand">Restaurant Plus</h3>
+                        <div class="flex items-end gap-1 mb-5">
+                            <span class="text-4xl font-bold text-slate-900 brand">£55</span>
+                            <span class="text-slate-400 mb-1">/month</span>
+                        </div>
+                        <ul class="space-y-2.5 text-sm text-slate-600 mb-6">
+                            <li class="flex items-start gap-2"><span class="text-amber-500 font-bold mt-0.5">✓</span> Everything in Restaurant</li>
+                            <li class="flex items-start gap-2"><span class="text-amber-500 font-bold mt-0.5">✓</span> Cloud order history across all devices</li>
+                            <li class="flex items-start gap-2"><span class="text-amber-500 font-bold mt-0.5">✓</span> Menu synced to cloud — new devices ready instantly</li>
+                            <li class="flex items-start gap-2"><span class="text-amber-500 font-bold mt-0.5">✓</span> Access your data from any location</li>
+                        </ul>
+                        <a href="#contact" class="block w-full text-center px-5 py-3 bg-gradient-to-r from-amber-600 to-orange-500 text-white rounded-xl font-semibold hover:shadow-lg transition-all">Get started</a>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Additional venue note -->
+            <div class="bg-white border border-slate-200 rounded-2xl p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4 shadow-sm">
+                <div class="flex-1">
+                    <p class="font-bold text-slate-900 brand mb-0.5">Running more than one venue?</p>
+                    <p class="text-sm text-slate-500">Each additional venue is <span class="font-semibold text-slate-700">+£25/month</span>, with its own independent menu, floor plan, and staff access — all managed from the same owner account.</p>
+                </div>
+                <a href="#contact" class="shrink-0 px-5 py-2.5 bg-slate-900 text-white text-sm rounded-xl font-semibold hover:bg-slate-700 transition-all whitespace-nowrap">Talk to us</a>
+            </div>
+
             <p class="text-center text-slate-400 text-sm mt-6">No setup fees. No per-device charges. Cancel any time. Prices exclude VAT.</p>
         </div>
     </section>

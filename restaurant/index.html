@@ -392,23 +392,24 @@
         <div class="max-w-xl mx-auto text-center relative z-10">
             <h2 class="text-4xl md:text-5xl font-bold text-white mb-4 brand">Get Metiflow Resto</h2>
             <p class="text-xl text-white/80 mb-10">Tell us about your venue and we'll get you set up. We handle onboarding personally — no self-signup portals.</p>
-            <form id="contact-form" class="text-left space-y-3 mb-6" onsubmit="handleEnquiry(event)">
+            <div data-fs-success class="text-white/80 text-base mb-6 hidden">Thanks — we'll be in touch within one business day.</div>
+            <div data-fs-error class="text-red-300 text-sm mb-3"></div>
+            <form id="contact-form" class="text-left space-y-3 mb-6">
                 <div class="grid sm:grid-cols-2 gap-3">
-                    <input id="cf-name" type="text" required placeholder="Your name"
+                    <input name="name" type="text" required placeholder="Your name" data-fs-field
                         class="w-full px-5 py-4 rounded-xl text-slate-900 font-medium placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400" />
-                    <input id="cf-restaurant" type="text" required placeholder="Restaurant name"
+                    <input name="restaurant" type="text" required placeholder="Restaurant name" data-fs-field
                         class="w-full px-5 py-4 rounded-xl text-slate-900 font-medium placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400" />
                 </div>
-                <input id="cf-email" type="email" required placeholder="Email address"
+                <input name="email" type="email" required placeholder="Email address" data-fs-field
                     class="w-full px-5 py-4 rounded-xl text-slate-900 font-medium placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400" />
-                <textarea id="cf-message" rows="3" placeholder="Anything you'd like to tell us — number of covers, locations, current setup... (optional)"
+                <span data-fs-error="email" class="text-red-300 text-xs -mt-1 block"></span>
+                <textarea name="message" rows="3" placeholder="Anything you'd like to tell us — number of covers, locations, current setup... (optional)" data-fs-field
                     class="w-full px-5 py-4 rounded-xl text-slate-900 font-medium placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 resize-none"></textarea>
-                <button type="submit" id="cf-btn" class="w-full px-6 py-4 bg-amber-500 hover:bg-amber-400 text-white rounded-xl font-bold transition-all hover:shadow-lg">
+                <button type="submit" data-fs-submit-btn class="w-full px-6 py-4 bg-amber-500 hover:bg-amber-400 text-white rounded-xl font-bold transition-all hover:shadow-lg">
                     Send enquiry
                 </button>
             </form>
-            <p id="cf-success" class="text-white/80 text-base hidden mb-4">Thanks — we'll be in touch within one business day.</p>
-            <p id="cf-error" class="text-red-300 text-sm hidden mb-4"></p>
             <p class="text-white/40 text-sm">Or email us directly at <a href="mailto:admin@metiflow.com" class="text-amber-300 hover:text-amber-200">admin@metiflow.com</a></p>
         </div>
     </section>
@@ -441,46 +442,15 @@
     </footer>
 
     <script>
-        // ── Set this to your deployed Metiflow Trader URL ──────────────────────
-        const METIFLOW_TRADER_URL = 'https://YOUR-METIFLOW-TRADER-DOMAIN.vercel.app';
-        // ─────────────────────────────────────────────────────────────────────
-
         const obs = new IntersectionObserver(entries => entries.forEach(e => {
             if (e.isIntersecting) e.target.classList.add('visible');
         }), { threshold: 0.1, rootMargin: '0px 0px -20px 0px' });
         document.querySelectorAll('.fade-in').forEach(el => obs.observe(el));
 
-        async function handleEnquiry(e) {
-            e.preventDefault();
-            const btn = document.getElementById('cf-btn');
-            const success = document.getElementById('cf-success');
-            const errEl = document.getElementById('cf-error');
-            btn.disabled = true;
-            btn.textContent = 'Sending…';
-            errEl.classList.add('hidden');
-
-            try {
-                const res = await fetch(`${METIFLOW_TRADER_URL}/api/kitchenflow-enquiry`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        name: document.getElementById('cf-name').value,
-                        restaurant: document.getElementById('cf-restaurant').value,
-                        email: document.getElementById('cf-email').value,
-                        message: document.getElementById('cf-message').value,
-                    }),
-                });
-                if (!res.ok) throw new Error('Server error');
-                document.getElementById('contact-form').classList.add('hidden');
-                success.classList.remove('hidden');
-            } catch {
-                errEl.textContent = 'Something went wrong — please email us directly at admin@metiflow.com';
-                errEl.classList.remove('hidden');
-                btn.disabled = false;
-                btn.textContent = 'Send enquiry';
-            }
-        }
+        window.formspree = window.formspree || function () { (formspree.q = formspree.q || []).push(arguments); };
+        formspree('initForm', { formElement: '#contact-form', formId: 'xrewrwdb' });
     </script>
+    <script src="https://unpkg.com/@formspree/ajax@1" defer></script>
     <script src="/assets/cookie-consent.js"></script>
 </body>
 </html>

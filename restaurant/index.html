@@ -441,8 +441,8 @@
     </footer>
 
     <script>
-        // ── Set this to your deployed TraderFlow URL ──────────────────────────
-        const TRADERFLOW_URL = 'https://YOUR-TRADERFLOW-DOMAIN.vercel.app';
+        // ── Set this to your deployed Metiflow Trader URL ──────────────────────
+        const METIFLOW_TRADER_URL = 'https://YOUR-METIFLOW-TRADER-DOMAIN.vercel.app';
         // ─────────────────────────────────────────────────────────────────────
 
         const obs = new IntersectionObserver(entries => entries.forEach(e => {
@@ -460,7 +460,7 @@
             errEl.classList.add('hidden');
 
             try {
-                const res = await fetch(`${TRADERFLOW_URL}/api/kitchenflow-enquiry`, {
+                const res = await fetch(`${METIFLOW_TRADER_URL}/api/kitchenflow-enquiry`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({

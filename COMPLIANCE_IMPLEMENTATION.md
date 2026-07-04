@@ -1,4 +1,4 @@
-# TraderFlow / Metiflow Compliance Implementation Notes
+# Metiflow Trader Compliance Implementation Notes
 
 This repository currently contains static marketing and legal pages. The items below complete the backend and app-layer requirements that cannot be fully enforced in static HTML alone.
 

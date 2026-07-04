@@ -1,0 +1,14 @@
+{
+  "redirects": [
+    {
+      "source": "/traderflow",
+      "destination": "/trader",
+      "permanent": true
+    },
+    {
+      "source": "/traderflow/:path*",
+      "destination": "/trader/:path*",
+      "permanent": true
+    }
+  ]
+}

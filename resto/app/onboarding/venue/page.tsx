@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { OnboardingShell } from '@/components/OnboardingShell'
@@ -22,7 +22,20 @@ export default function VenuePage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  async function handleSubmit(e: React.FormEvent) {
+  // Pre-fill from register page if available
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem('onboarding_prefill')
+      if (!raw) return
+      const p = JSON.parse(raw)
+      if (p.name)     setName(p.name)
+      if (p.phone)    setPhone(p.phone)
+      if (p.address)  setAddress(p.address)
+      if (p.currency) setCurrency(p.currency)
+    } catch { /* ignore */ }
+  }, [])
+
+  async function handleSubmit(e: { preventDefault(): void }) {
     e.preventDefault()
     setLoading(true); setError('')
     const sb = createClient()
@@ -40,9 +53,17 @@ export default function VenuePage() {
       created_at: new Date().toISOString(),
     })
     if (insertErr) { setError(insertErr.message); setLoading(false); return }
-    // Store venue id in session storage for subsequent steps
     sessionStorage.setItem('onboarding_venue_id', venueId)
-    router.push('/onboarding/type')
+
+    // If type was set on the register page, skip the type step
+    const prefill = (() => { try { return JSON.parse(sessionStorage.getItem('onboarding_prefill') ?? '{}') } catch { return {} } })()
+    if (prefill.type) {
+      sessionStorage.setItem('onboarding_type', prefill.type)
+      sessionStorage.removeItem('onboarding_prefill')
+      router.push('/onboarding/plan')
+    } else {
+      router.push('/onboarding/type')
+    }
   }
 
   return (

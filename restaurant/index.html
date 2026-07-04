@@ -399,22 +399,21 @@
         <div class="max-w-xl mx-auto text-center relative z-10">
             <h2 class="text-4xl md:text-5xl font-bold text-white mb-4 brand">Get Metiflow Resto</h2>
             <p class="text-xl text-white/80 mb-10">Tell us about your venue and we'll get you set up. We handle onboarding personally — no self-signup portals.</p>
-            <div data-fs-success class="text-white/80 text-base mb-6 hidden">Thanks — we'll be in touch within one business day.</div>
-            <div data-fs-error class="text-red-300 text-sm mb-3"></div>
+            <div data-success class="text-white/80 text-base mb-6 hidden">Thanks — we'll be in touch within one business day.</div>
+            <div data-error class="text-red-300 text-sm mb-3"></div>
             <form id="contact-form" class="text-left space-y-4 mb-6">
 
                 <!-- Name & venue -->
                 <div class="grid sm:grid-cols-2 gap-3">
-                    <input name="name" type="text" required placeholder="Your name" data-fs-field
+                    <input name="name" type="text" required placeholder="Your name"
                         class="w-full px-5 py-4 rounded-xl text-slate-900 font-medium placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400" />
-                    <input name="venue" type="text" required placeholder="Venue name" data-fs-field
+                    <input name="venue" type="text" required placeholder="Venue name"
                         class="w-full px-5 py-4 rounded-xl text-slate-900 font-medium placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400" />
                 </div>
 
                 <!-- Email -->
-                <input name="email" type="email" required placeholder="Email address" data-fs-field
+                <input name="email" type="email" required placeholder="Email address"
                     class="w-full px-5 py-4 rounded-xl text-slate-900 font-medium placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400" />
-                <span data-fs-error="email" class="text-red-300 text-xs -mt-2 block"></span>
 
                 <!-- Business type -->
                 <div>
@@ -430,7 +429,7 @@
                 <div class="grid sm:grid-cols-2 gap-3">
                     <div>
                         <label class="text-white/70 text-sm font-semibold block mb-2">Number of venues <span class="text-amber-400">*</span></label>
-                        <input name="venues" type="number" min="1" value="1" required data-fs-field
+                        <input name="venues" type="number" min="1" value="1" required
                             class="w-full px-5 py-4 rounded-xl text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-amber-400" />
                     </div>
                     <div>
@@ -439,7 +438,7 @@
                             <button type="button" onclick="document.getElementById('points-guide').classList.toggle('hidden')"
                                 class="w-5 h-5 rounded-full bg-white/20 text-white text-xs font-bold hover:bg-white/30 transition-colors flex items-center justify-center shrink-0">?</button>
                         </div>
-                        <input name="pos_points" type="number" min="1" required placeholder="e.g. 3" data-fs-field
+                        <input name="pos_points" type="number" min="1" required placeholder="e.g. 3"
                             class="w-full px-5 py-4 rounded-xl text-slate-900 font-medium placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400" />
                     </div>
                 </div>
@@ -457,12 +456,12 @@
                 <div class="grid sm:grid-cols-2 gap-3">
                     <div>
                         <label class="text-white/70 text-sm font-semibold block mb-2">Tables <span class="text-white/40 font-normal">(optional)</span></label>
-                        <input name="tables" type="number" min="0" placeholder="Number of tables" data-fs-field
+                        <input name="tables" type="number" min="0" placeholder="Number of tables"
                             class="w-full px-5 py-4 rounded-xl text-slate-900 font-medium placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400" />
                     </div>
                     <div>
                         <label class="text-white/70 text-sm font-semibold block mb-2">Covers / chairs <span class="text-white/40 font-normal">(optional)</span></label>
-                        <input name="covers" type="number" min="0" placeholder="Number of covers" data-fs-field
+                        <input name="covers" type="number" min="0" placeholder="Number of covers"
                             class="w-full px-5 py-4 rounded-xl text-slate-900 font-medium placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400" />
                     </div>
                 </div>
@@ -470,16 +469,16 @@
                 <!-- Photo upload (optional) -->
                 <div>
                     <label class="text-white/70 text-sm font-semibold block mb-2">Photos / menus <span class="text-white/40 font-normal">(optional)</span></label>
-                    <input name="photos" type="file" multiple accept="image/*,.pdf" data-fs-field
+                    <input name="photos" type="file" multiple accept="image/*,.pdf"
                         class="w-full text-white/70 text-sm file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:font-semibold file:bg-amber-500 file:text-white hover:file:bg-amber-400 file:cursor-pointer file:transition-colors" />
                     <p class="text-white/40 text-xs mt-1">Layout photos, menus — images or PDFs, max 5MB total</p>
                 </div>
 
                 <!-- Message -->
-                <textarea name="message" rows="2" placeholder="Anything else you'd like to add (optional)" data-fs-field
+                <textarea name="message" rows="2" placeholder="Anything else you'd like to add (optional)"
                     class="w-full px-5 py-4 rounded-xl text-slate-900 font-medium placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 resize-none"></textarea>
 
-                <button type="submit" data-fs-submit-btn class="w-full px-6 py-4 bg-amber-500 hover:bg-amber-400 text-white rounded-xl font-bold transition-all hover:shadow-lg">
+                <button type="submit" class="w-full px-6 py-4 bg-amber-500 hover:bg-amber-400 text-white rounded-xl font-bold transition-all hover:shadow-lg">
                     Send enquiry
                 </button>
             </form>
@@ -520,10 +519,67 @@
         }), { threshold: 0.1, rootMargin: '0px 0px -20px 0px' });
         document.querySelectorAll('.fade-in').forEach(el => obs.observe(el));
 
-        window.formspree = window.formspree || function () { (formspree.q = formspree.q || []).push(arguments); };
-        formspree('initForm', { formElement: '#contact-form', formId: 'xrewrwdb' });
     </script>
-    <script src="https://unpkg.com/@formspree/ajax@1" defer></script>
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+        const SUPABASE_URL = 'https://cgynehcmrlaybxiwkzex.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNneW5laGNtcmxheWJ4aXdremV4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYxOTA1MDQsImV4cCI6MjA2MTc2NjUwNH0.f09LqyrVt11w2ReSFPd59TzXolH8QT9VB3tP2v8jx1A';
+        const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        const form = document.getElementById('contact-form');
+        const successEl = form.querySelector('[data-success]');
+        const errorEl = form.querySelector('[data-error]');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            successEl.style.display = 'none';
+            errorEl.style.display = 'none';
+
+            const btn = form.querySelector('[type="submit"]');
+            btn.disabled = true;
+            btn.textContent = 'Sending…';
+
+            const data = new FormData(form);
+
+            // Upload photos if provided
+            let photoUrls = [];
+            const photos = data.getAll('photos').filter(f => f.size > 0);
+            for (const file of photos) {
+                const path = `${Date.now()}-${file.name}`;
+                const { data: upload, error: uploadErr } = await sb.storage
+                    .from('enquiry-photos')
+                    .upload(path, file, { upsert: false });
+                if (!uploadErr && upload) {
+                    const { data: { publicUrl } } = sb.storage.from('enquiry-photos').getPublicUrl(upload.path);
+                    photoUrls.push(publicUrl);
+                }
+            }
+
+            const { error } = await sb.from('enquiries').insert({
+                name: data.get('name'),
+                venue: data.get('venue'),
+                email: data.get('email'),
+                venues: data.get('venues') || null,
+                pos_points: data.get('pos_points') ? Number(data.get('pos_points')) : null,
+                tables: data.get('tables') ? Number(data.get('tables')) : null,
+                covers: data.get('covers') ? Number(data.get('covers')) : null,
+                message: data.get('message') || null,
+                photo_urls: photoUrls.length ? photoUrls : null,
+            });
+
+            btn.disabled = false;
+            btn.textContent = 'Send enquiry';
+
+            if (error) {
+                errorEl.textContent = 'Something went wrong. Please try again or email us directly.';
+                errorEl.style.display = 'block';
+            } else {
+                successEl.style.display = 'block';
+                form.reset();
+            }
+        });
+    </script>
     <script src="/assets/cookie-consent.js"></script>
 </body>
 </html>

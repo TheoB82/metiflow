@@ -528,12 +528,12 @@
         const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         const form = document.getElementById('contact-form');
-        const successEl = form.querySelector('[data-success]');
-        const errorEl = form.querySelector('[data-error]');
+        const successEl = document.querySelector('[data-success]');
+        const errorEl = document.querySelector('[data-error]');
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            successEl.style.display = 'none';
+            successEl.classList.add('hidden');
             errorEl.style.display = 'none';
 
             const btn = form.querySelector('[type="submit"]');
@@ -575,7 +575,7 @@
                 errorEl.textContent = 'Something went wrong. Please try again or email us directly.';
                 errorEl.style.display = 'block';
             } else {
-                successEl.style.display = 'block';
+                successEl.classList.remove('hidden');
                 form.reset();
             }
         });

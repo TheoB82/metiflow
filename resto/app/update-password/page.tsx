@@ -36,7 +36,7 @@ export default function UpdatePasswordPage() {
     const { error: err } = await sb.auth.updateUser({ password })
     if (err) { setError(err.message); setLoading(false); return }
     setDone(true)
-    setTimeout(() => router.push('/login'), 2000)
+    setTimeout(() => { window.location.href = '/login' }, 2000)
   }
 
   return (

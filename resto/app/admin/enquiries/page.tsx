@@ -68,6 +68,10 @@ export default function AdminEnquiriesPage() {
           fontSize: '0.75rem', fontWeight: 600, padding: '2px 10px', borderRadius: 99,
           background: '#fef3c7', color: '#b45309',
         }}>Admin</span>
+        <button onClick={async () => { const sb = createClient(); await sb.auth.signOut(); window.location.href = '/login' }}
+          style={{ fontSize: '0.875rem', color: 'var(--text-2)', background: 'none', border: '1px solid var(--border)', borderRadius: 6, padding: '0.375rem 0.75rem', cursor: 'pointer' }}>
+          Sign out
+        </button>
       </header>
 
       <main style={{ maxWidth: 960, margin: '0 auto', padding: '2rem 1.5rem', display: 'flex', gap: '1.5rem' }}>

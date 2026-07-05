@@ -11,7 +11,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: { preventDefault(): void }) {
     e.preventDefault()
     setLoading(true); setError('')
     const sb = createClient()
@@ -20,6 +20,10 @@ export default function LoginPage() {
     // Check if onboarding is complete
     const { data: { user } } = await sb.auth.getUser()
     if (!user) { setError('Sign in failed'); setLoading(false); return }
+    if (user.email === 'admin@metiflow.com') {
+      router.push('/admin/enquiries')
+      return
+    }
     const { data: venues } = await sb.from('venues').select('id').eq('owner_id', user.id).limit(1)
     if (!venues || venues.length === 0) {
       router.push('/onboarding/venue')

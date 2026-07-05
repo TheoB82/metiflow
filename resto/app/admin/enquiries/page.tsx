@@ -60,7 +60,7 @@ export default function AdminEnquiriesPage() {
         background: 'var(--surface)', borderBottom: '1px solid var(--border)',
         padding: '0 1.5rem', display: 'flex', alignItems: 'center', gap: '1rem', height: 60,
       }}>
-        <Logo size={32} />
+        <Logo size={32} compact />
         <span style={{ color: 'var(--text-3)', fontSize: '0.875rem' }}>›</span>
         <span style={{ fontSize: '0.875rem', fontWeight: 600 }}>Enquiries</span>
         <div style={{ flex: 1 }} />

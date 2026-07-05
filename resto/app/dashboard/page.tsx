@@ -67,7 +67,7 @@ export default function DashboardPage() {
         background: 'var(--surface)', borderBottom: '1px solid var(--border)',
         padding: '0 1.5rem', display: 'flex', alignItems: 'center', gap: '1rem', height: 60,
       }}>
-        <Logo size={32} />
+        <Logo size={32} compact />
         <div style={{ flex: 1 }} />
         <span style={{ fontSize: '0.875rem', color: 'var(--text-2)' }}>{userEmail}</span>
         <button onClick={signOut} style={{

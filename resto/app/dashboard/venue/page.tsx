@@ -59,7 +59,7 @@ function VenueEditForm() {
     setHours(h => ({ ...h, [day]: { ...h[day], ...patch } }))
   }
 
-  async function handleSave(e: React.FormEvent) {
+  async function handleSave(e: { preventDefault(): void }) {
     e.preventDefault()
     setSaving(true); setError(''); setSuccess(false)
     const sb = createClient()
@@ -193,15 +193,13 @@ function VenueEditForm() {
 }
 
 export default function VenueEditPage() {
-  const router = useRouter()
-
   return (
     <div style={{ minHeight: '100vh', background: 'var(--surface-2)' }}>
       <header style={{
         background: 'var(--surface)', borderBottom: '1px solid var(--border)',
         padding: '0 1.5rem', display: 'flex', alignItems: 'center', gap: '1rem', height: 60,
       }}>
-        <Logo size={32} />
+        <Logo size={32} compact />
         <span style={{ color: 'var(--text-3)', fontSize: '0.875rem' }}>›</span>
         <a href="/dashboard" style={{ fontSize: '0.875rem', color: 'var(--text-2)', textDecoration: 'none' }}>Dashboard</a>
         <span style={{ color: 'var(--text-3)', fontSize: '0.875rem' }}>›</span>

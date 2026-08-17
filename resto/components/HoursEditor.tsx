@@ -17,6 +17,19 @@ export function HoursEditor({ hours, onChange }: { hours: Hours; onChange: (h: H
     const d = hours[String(day)]
     setDay(day, { slots: d.slots.filter((_, i) => i !== idx) })
   }
+  // Copies a day's open/closed state and time ranges onto every day after
+  // it (Tue copies to Wed–Sun, Wed to Thu–Sun, etc.) — the common case is
+  // "same hours all week except Sunday", so copying forward from the first
+  // day usually sets the whole week in one tap; days already visited can
+  // still be adjusted individually afterwards.
+  function copyToRest(day: number) {
+    const source = hours[String(day)]
+    const next: Hours = { ...hours }
+    for (let d = day + 1; d <= 7; d++) {
+      next[String(d)] = { isOpen: source.isOpen, slots: source.slots.map(s => ({ ...s })) }
+    }
+    onChange(next)
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -41,6 +54,20 @@ export function HoursEditor({ hours, onChange }: { hours: Hours; onChange: (h: H
                 {label}
               </label>
               {!d.isOpen && <span style={{ fontSize: '0.8125rem', color: 'var(--text-3)', fontStyle: 'italic' }}>Closed</span>}
+              {day < 7 && (
+                <button
+                  type="button"
+                  onClick={() => copyToRest(day)}
+                  title="Copy these hours to every day below"
+                  style={{
+                    marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer',
+                    color: 'var(--text-3)', fontSize: '0.75rem', padding: '2px 4px',
+                    display: 'flex', alignItems: 'center', gap: 4,
+                  }}
+                >
+                  Copy to rest of week ↓
+                </button>
+              )}
             </div>
 
             {d.isOpen && (

@@ -66,7 +66,16 @@ export default function FeaturesPage() {
     if (!venueId) { router.push('/onboarding/venue'); return }
     setSaving(true); setError('')
     try {
-      await mergeVenueSettings(venueId, { ...values, cloud_history: cloudHistory })
+      // `inventory` is the internal stock-tracking capability flag; the
+      // Settings screen the owner actually sees ("Stock Room in main
+      // menu") reads a DIFFERENT key, enable_stock_room — both need
+      // setting from the one checkbox here, or the app shows it as off
+      // with no indication why (confirmed 2026-08-18).
+      await mergeVenueSettings(venueId, {
+        ...values,
+        enable_stock_room: values.inventory,
+        cloud_history: cloudHistory,
+      })
     } catch (err) {
       setError((err as Error).message); setSaving(false); return
     }

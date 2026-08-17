@@ -31,8 +31,17 @@ export default function DashboardPage() {
   const [venues, setVenues] = useState<Venue[]>([])
   const [loading, setLoading] = useState(true)
   const [userEmail, setUserEmail] = useState('')
+  const [showMultiHint, setShowMultiHint] = useState(false)
 
   useEffect(() => {
+    // One-time nudge — set when the owner said "more than one location"
+    // during onboarding. Consumed immediately so it only shows on this
+    // first landing, not every dashboard visit afterwards.
+    if (sessionStorage.getItem('onboarding_multi') === 'multiple') {
+      setShowMultiHint(true)
+      sessionStorage.removeItem('onboarding_multi')
+    }
+
     async function load() {
       const sb = createClient()
       const { data: { user } } = await sb.auth.getUser()
@@ -77,6 +86,22 @@ export default function DashboardPage() {
       </header>
 
       <main style={{ maxWidth: 860, margin: '0 auto', padding: '2rem 1.5rem' }}>
+        {showMultiHint && (
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 12, marginBottom: '1.5rem',
+            padding: '0.75rem 1rem', background: 'var(--brand-light)',
+            border: '1px solid var(--brand)', borderRadius: 8,
+          }}>
+            <span style={{ fontSize: 18 }}>🏪</span>
+            <p style={{ fontSize: '0.875rem', color: 'var(--text)', flex: 1 }}>
+              This venue is set up. When you&rsquo;re ready, use <b>+ Add venue</b> below for your next
+              location — you&rsquo;ll be able to copy this one&rsquo;s menu and settings as a starting point.
+            </p>
+            <button onClick={() => setShowMultiHint(false)} style={{
+              background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)', fontSize: '1.125rem', lineHeight: 1,
+            }}>×</button>
+          </div>
+        )}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
           <div>
             <h1 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: 4 }}>Your venues</h1>
@@ -92,7 +117,7 @@ export default function DashboardPage() {
         {venues.length === 0 ? (
           <div className="card" style={{ textAlign: 'center', padding: '3rem' }}>
             <div style={{ fontSize: 48, marginBottom: 12 }}>🏪</div>
-            <p style={{ color: 'var(--text-2)', marginBottom: '1rem' }}>No venues yet. Let's set one up.</p>
+            <p style={{ color: 'var(--text-2)', marginBottom: '1rem' }}>No venues yet. Let&rsquo;s set one up.</p>
             <a href="/onboarding/venue" style={{
               display: 'inline-block', background: 'var(--brand)', color: '#fff',
               borderRadius: 8, padding: '0.625rem 1.25rem', fontWeight: 600, fontSize: '0.875rem', textDecoration: 'none',
@@ -134,11 +159,18 @@ function VenueCard({ venue }: { venue: Venue }) {
         {venue.address && <p style={{ fontSize: '0.875rem', color: 'var(--text-2)', marginBottom: 4 }}>{venue.address}</p>}
         <p style={{ fontSize: '0.8125rem', color: 'var(--text-3)' }}>{modes} · {venue.currency}</p>
       </div>
-      <a href={`/dashboard/venue?id=${venue.id}`} style={{
-        flexShrink: 0, padding: '0.5rem 1rem', border: '1.5px solid var(--border)',
-        borderRadius: 8, fontSize: '0.875rem', fontWeight: 500, textDecoration: 'none', color: 'var(--text)',
-        background: 'var(--surface)',
-      }}>Edit</a>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, flexShrink: 0 }}>
+        <a href={`/dashboard/venue?id=${venue.id}`} style={{
+          padding: '0.5rem 1rem', border: '1.5px solid var(--border)',
+          borderRadius: 8, fontSize: '0.875rem', fontWeight: 500, textDecoration: 'none', color: 'var(--text)',
+          background: 'var(--surface)', textAlign: 'center',
+        }}>Edit</a>
+        <a href={`/dashboard/billing?id=${venue.id}`} style={{
+          padding: '0.5rem 1rem', border: '1.5px solid var(--border)',
+          borderRadius: 8, fontSize: '0.875rem', fontWeight: 500, textDecoration: 'none', color: 'var(--text)',
+          background: 'var(--surface)', textAlign: 'center',
+        }}>Billing</a>
+      </div>
     </div>
   )
 }

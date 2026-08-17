@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { OnboardingShell } from '@/components/OnboardingShell'
@@ -35,6 +35,14 @@ export default function TypePage() {
   const [selected, setSelected] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
+  // Copy-from-venue already set the type flags directly on the venue row —
+  // don't ask again (and don't let stale answers here override the copy).
+  useEffect(() => {
+    if (sessionStorage.getItem('onboarding_copy_from')) {
+      router.replace('/onboarding/plan')
+    }
+  }, [router])
 
   async function handleContinue() {
     if (!selected) return

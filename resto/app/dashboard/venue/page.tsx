@@ -3,14 +3,11 @@ import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { Logo } from '@/components/Logo'
-
-const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-type DayHours = { open: boolean; from: string; to: string }
-type Hours = Record<string, DayHours>
-
-function defaultHours(): Hours {
-  return Object.fromEntries(DAYS.map(d => [d, { open: true, from: '09:00', to: '22:00' }]))
-}
+import { HoursEditor } from '@/components/HoursEditor'
+import { defaultHours, parseHours, encodeHours, type Hours } from '@/lib/openingHours'
+import { mergeVenueSettings } from '@/lib/venueSettings'
+import { uniqueSlug } from '@/lib/slug'
+import { t } from '@/lib/i18n'
 
 function VenueEditForm() {
   const router = useRouter()
@@ -25,6 +22,7 @@ function VenueEditForm() {
   const [takeaway, setTakeaway] = useState(false)
   const [tableCount, setTableCount] = useState(10)
   const [hours, setHours] = useState<Hours>(defaultHours())
+  const [slug, setSlug] = useState('')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -44,24 +42,25 @@ function VenueEditForm() {
       setCurrency(data.currency ?? 'GBP')
       setTableService(data.enable_table_service ?? true)
       setTakeaway(data.enable_takeaway ?? false)
-      if (data.opening_hours) {
-        try { setHours(JSON.parse(data.opening_hours)) } catch { /* keep default */ }
-      }
+      if (data.opening_hours) setHours(parseHours(data.opening_hours))
       if (data.settings_json) {
         try { const s = JSON.parse(data.settings_json); if (s.table_count) setTableCount(s.table_count) } catch { /* */ }
       }
+      setSlug(data.slug ?? '')
       setLoading(false)
     }
     load()
   }, [venueId, router])
 
-  function setDay(day: string, patch: Partial<DayHours>) {
-    setHours(h => ({ ...h, [day]: { ...h[day], ...patch } }))
-  }
-
   async function handleSave(e: { preventDefault(): void }) {
     e.preventDefault()
     setSaving(true); setError(''); setSuccess(false)
+
+    // uniqueSlug() re-normalises and checks for collisions, excluding this
+    // venue's own current row so an unchanged slug doesn't "collide with
+    // itself". Falls back to the venue name if the field's been cleared.
+    const finalSlug = await uniqueSlug(slug.trim() || name, venueId!)
+
     const sb = createClient()
     const { error: err } = await sb.from('venues').update({
       name: name.trim(),
@@ -70,10 +69,17 @@ function VenueEditForm() {
       currency,
       enable_table_service: tableService,
       enable_takeaway: takeaway,
-      opening_hours: JSON.stringify(hours),
-      settings_json: JSON.stringify({ table_count: tableCount }),
-    }).eq('id', venueId)
+      opening_hours: encodeHours(hours),
+      slug: finalSlug || null,
+    }).eq('id', venueId!)
     if (err) { setError(err.message); setSaving(false); return }
+
+    try {
+      await mergeVenueSettings(venueId!, { table_count: tableCount })
+    } catch (settingsErr) {
+      setError((settingsErr as Error).message); setSaving(false); return
+    }
+
     setSuccess(true); setSaving(false)
     setTimeout(() => setSuccess(false), 3000)
   }
@@ -149,32 +155,34 @@ function VenueEditForm() {
 
       <section>
         <h2 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '0.75rem' }}>Opening hours</h2>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-          {DAYS.map(day => (
-            <div key={day} style={{
-              display: 'grid', gridTemplateColumns: '1fr auto auto auto', gap: '0.5rem',
-              alignItems: 'center', padding: '0.5rem 0.75rem',
-              border: '1.5px solid var(--border)', borderRadius: 8,
-              background: hours[day]?.open ? 'var(--surface)' : '#f8fafc',
-            }}>
-              <label style={{ fontSize: '0.875rem', fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}>
-                <input type="checkbox" checked={hours[day]?.open ?? true} onChange={e => setDay(day, { open: e.target.checked })}
-                  style={{ accentColor: 'var(--brand)', width: 15, height: 15 }} />
-                {day}
-              </label>
-              {hours[day]?.open ? (
-                <>
-                  <input type="time" value={hours[day]?.from ?? '09:00'} onChange={e => setDay(day, { from: e.target.value })}
-                    style={{ padding: '0.25rem 0.5rem', border: '1px solid var(--border)', borderRadius: 6, fontSize: '0.875rem' }} />
-                  <span style={{ color: 'var(--text-3)', fontSize: '0.875rem' }}>–</span>
-                  <input type="time" value={hours[day]?.to ?? '22:00'} onChange={e => setDay(day, { to: e.target.value })}
-                    style={{ padding: '0.25rem 0.5rem', border: '1px solid var(--border)', borderRadius: 6, fontSize: '0.875rem' }} />
-                </>
-              ) : (
-                <span style={{ gridColumn: 'span 3', fontSize: '0.8125rem', color: 'var(--text-3)', fontStyle: 'italic' }}>Closed</span>
-              )}
-            </div>
-          ))}
+        <HoursEditor hours={hours} onChange={setHours} />
+      </section>
+
+      <section>
+        <h2 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 }}>
+          {t('publicPageTitle')}
+          <span style={{
+            fontSize: '0.6875rem', fontWeight: 700, padding: '2px 8px', borderRadius: 99,
+            background: 'var(--surface-2)', color: 'var(--text-2)', border: '1px solid var(--border)',
+          }}>{t('publicPageComingSoon')}</span>
+        </h2>
+        <p style={{ fontSize: '0.8125rem', color: 'var(--text-2)', marginBottom: '0.75rem' }}>{t('publicPageDesc')}</p>
+        <div className="field">
+          <label>Page address</label>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
+            <span style={{
+              padding: '0.625rem 0 0.625rem 0.875rem', fontSize: '0.9375rem', color: 'var(--text-3)',
+              border: '1.5px solid var(--border)', borderRight: 'none', borderRadius: '8px 0 0 8px',
+              background: 'var(--surface-2)', whiteSpace: 'nowrap',
+            }}>metiflow.com/v/</span>
+            <input
+              value={slug}
+              onChange={e => setSlug(e.target.value)}
+              placeholder="your-venue-name"
+              style={{ borderRadius: '0 8px 8px 0' }}
+            />
+          </div>
+          <span className="hint">Reserved now so the link is stable once ordering goes live — nothing is publicly visible here yet.</span>
         </div>
       </section>
 

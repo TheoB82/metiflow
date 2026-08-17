@@ -3,6 +3,8 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { Logo } from '@/components/Logo'
+import { uniqueSlug } from '@/lib/slug'
+import { t } from '@/lib/i18n'
 
 type VenueType = 'restaurant' | 'takeaway' | 'both'
 
@@ -26,6 +28,7 @@ export default function RegisterPage() {
   const [address, setAddress] = useState('')
   const [currency, setCurrency] = useState('GBP')
   const [venueType, setVenueType] = useState<VenueType>('restaurant')
+  const [multiLocation, setMultiLocation] = useState<'single' | 'multiple'>('single')
 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -54,6 +57,7 @@ export default function RegisterPage() {
     if (user && session) {
       const tableService = venueType === 'restaurant' || venueType === 'both'
       const takeaway    = venueType === 'takeaway'   || venueType === 'both'
+      const slug = await uniqueSlug(businessName.trim())
 
       const { data: venue, error: venueErr } = await sb.from('venues').insert({
         owner_id: user.id,
@@ -63,6 +67,7 @@ export default function RegisterPage() {
         currency,
         enable_table_service: tableService,
         enable_takeaway: takeaway,
+        slug,
       }).select('id').single()
 
       if (venueErr) {
@@ -80,6 +85,7 @@ export default function RegisterPage() {
 
       sessionStorage.setItem('onboarding_venue_id', venue.id)
       sessionStorage.setItem('onboarding_type', venueType)
+      sessionStorage.setItem('onboarding_multi', multiLocation)
       router.push('/onboarding/plan')
       return
     }
@@ -91,6 +97,7 @@ export default function RegisterPage() {
       address: address.trim(),
       currency,
       type: venueType,
+      multi: multiLocation,
     }))
     router.push('/onboarding/venue')
   }
@@ -105,7 +112,7 @@ export default function RegisterPage() {
         <div className="card">
           <h1 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.25rem' }}>Set up your account</h1>
           <p style={{ color: 'var(--text-2)', fontSize: '0.875rem', marginBottom: '1.5rem' }}>
-            Fill in your details below — you'll be up and running in minutes.
+            Fill in your details below — you&rsquo;ll be up and running in minutes.
           </p>
 
           {error && <div className="error-box" style={{ marginBottom: '1rem' }}>{error}</div>}
@@ -189,6 +196,32 @@ export default function RegisterPage() {
                   <div style={{ fontSize: '0.6875rem', color: 'var(--text-3)', marginTop: 2, lineHeight: 1.3 }}>
                     {opt.desc}
                   </div>
+                </button>
+              ))}
+            </div>
+
+            {/* ── Multi-location fork ────────────────────────────────── */}
+            <p style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: '0.75rem' }}>
+              {t('locationsQuestion')}
+            </p>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', marginBottom: '1.5rem' }}>
+              {([
+                ['single', t('locationsSingle'), t('locationsSingleDesc')],
+                ['multiple', t('locationsMultiple'), t('locationsMultipleDesc')],
+              ] as const).map(([value, label, desc]) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setMultiLocation(value)}
+                  style={{
+                    padding: '0.75rem', textAlign: 'left', borderRadius: 10, cursor: 'pointer',
+                    border: `1.5px solid ${multiLocation === value ? 'var(--brand)' : 'var(--border)'}`,
+                    background: multiLocation === value ? 'var(--brand-light)' : 'var(--surface)',
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  <div style={{ fontSize: '0.875rem', fontWeight: 700, color: multiLocation === value ? 'var(--brand)' : 'var(--text)' }}>{label}</div>
+                  <div style={{ fontSize: '0.6875rem', color: 'var(--text-3)', marginTop: 2, lineHeight: 1.3 }}>{desc}</div>
                 </button>
               ))}
             </div>

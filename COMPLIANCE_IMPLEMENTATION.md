@@ -93,7 +93,32 @@ This repo controls marketing pages only. Ensure the app shell and auth pages inc
 - Contact (`mailto:admin@metiflow.com`)
 - Company details
 
-## 8) Enterprise Readiness (Later)
+## 8) Self-Service Data Export (Required before general rollout)
+
+Referenced by Terms cl. 3 & 14, Privacy Policy §8, and DPA §3 — those documents now describe this as available; the feature needs to exist before those clauses are fully accurate.
+
+### Scope
+- **Metiflow Resto**: menus, service periods, venues/tables, order and order-item history, payment/bill records, staff list (names, not PINs), and diner contact details (name/phone) entered for takeaway or reservations.
+- **Metiflow Trader**: quotes, jobs, invoices, materials, schedules, and expense records.
+- Organisation-level export only — a User exports their own Account's data, not other organisations'.
+
+### Trigger and access control
+- Owner/admin role only (not general staff), from Settings.
+- Available on demand, at any frequency — no artificial rate limit beyond basic abuse protection.
+- Require re-authentication (password or PIN) before generating an export, given the sensitivity of diner/staff personal data included.
+
+### Format and delivery
+- Structured, machine-readable format (CSV per data type, or a single JSON/zip bundle) — supports both the "keep your own backup" purpose (Terms cl. 3/14) and data portability requests under UK GDPR Art. 20.
+- Delivered as a direct in-app download; avoid emailing the export itself given it may contain personal data.
+
+### Audit and logging
+- Log every export event: which Account, which User, timestamp. This is the evidence trail referenced in the DPA's "assist with data subject rights" obligation and is the kind of record a dispute or regulator would ask for.
+
+### Data protection notes
+- Where an export includes diner personal data, the requesting Account is the controller of that data (per Terms Schedule B and the DPA) and becomes responsible for how they subsequently handle the exported copy.
+- Once shipped, update Terms cl. 3/14, Privacy Policy §8, and the Resto app-store privacy policy to remove the "until that self-service tool is available" fallback language.
+
+## 9) Enterprise Readiness (Later)
 
 Prepare backlog items for enterprise customers:
 

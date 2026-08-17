@@ -3,58 +3,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { OnboardingShell } from '@/components/OnboardingShell'
-
-type PlanId = 'takeaway' | 'takeaway_online' | 'basic' | 'basic_online'
-
-type Plan = {
-  id: PlanId
-  name: string
-  price: string
-  badge: string
-  badgeColor: string
-  features: string[]
-  popular?: boolean
-}
-
-const TAKEAWAY_PLANS: Plan[] = [
-  {
-    id: 'takeaway',
-    name: 'Takeaway',
-    price: '£19.50',
-    badge: 'Local only',
-    badgeColor: '#0284c7',
-    features: ['Takeaway order screen + KDS', 'Modifiers, scheduling, delivery & collection', 'Live WiFi sync across all devices', 'Payments and daily takings'],
-  },
-  {
-    id: 'takeaway_online',
-    name: 'Takeaway Pro',
-    price: '£24.50',
-    badge: '+ Online backup',
-    badgeColor: '#d97706',
-    features: ['Everything in Takeaway', 'Cloud order history', 'Menu backed up to cloud', 'New devices sync instantly'],
-    popular: true,
-  },
-]
-
-const RESTAURANT_PLANS: Plan[] = [
-  {
-    id: 'basic',
-    name: 'Restaurant',
-    price: '£44.50',
-    badge: 'Local only',
-    badgeColor: '#ea580c',
-    features: ['Table plan, orders, KDS, payments', 'Reservations & booking management', 'Takeaway & pre-orders included', 'Unlimited devices & staff'],
-  },
-  {
-    id: 'basic_online',
-    name: 'Restaurant Pro',
-    price: '£49.50',
-    badge: '+ Online backup',
-    badgeColor: '#d97706',
-    features: ['Everything in Restaurant', 'Cloud order history across all devices', 'Menu synced to cloud', 'Access your data from anywhere'],
-    popular: true,
-  },
-]
+import { TAKEAWAY_PLANS, RESTAURANT_PLANS, type PlanId } from '@/lib/plans'
 
 export default function PlanPage() {
   const router = useRouter()
@@ -79,7 +28,7 @@ export default function PlanPage() {
     const sb = createClient()
     const { error: err } = await sb.from('venues').update({ plan: selected }).eq('id', venueId)
     if (err) { setError(err.message); setLoading(false); return }
-    router.push('/onboarding/settings')
+    router.push('/onboarding/handoff')
   }
 
   return (
@@ -132,7 +81,7 @@ export default function PlanPage() {
       </div>
 
       <p style={{ fontSize: '0.8125rem', color: 'var(--text-3)', marginBottom: '1rem', textAlign: 'center' }}>
-        You won't be charged today — your account starts on a free trial.
+        You won&rsquo;t be charged today — your account starts on a free trial.
       </p>
 
       <button className="btn-primary" onClick={handleContinue} disabled={!selected || loading}>

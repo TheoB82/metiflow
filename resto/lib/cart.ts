@@ -86,6 +86,18 @@ export async function placeOrder(
     .ilike('name', tableLabel)
     .maybeSingle()
 
+  // The kitchen display routes tickets by station, and grouping is keyed
+  // off course_type — both live on the menu item, not the cart row, so they
+  // have to be looked up here rather than copied from qr_cart_items (which
+  // only denormalizes name/price for the bill). Without these an order's
+  // items carry no station at all, making them invisible on any per-station
+  // KDS screen.
+  const { data: menuItems } = await sb
+    .from('menu_items')
+    .select('id, station_id, course_type')
+    .in('id', items.map((item) => item.menu_item_id))
+  const menuItemById = new Map((menuItems ?? []).map((mi) => [mi.id, mi]))
+
   const now = new Date().toISOString()
   const orderId = crypto.randomUUID()
 
@@ -110,6 +122,8 @@ export async function placeOrder(
       order_id: orderId,
       menu_item_id: item.menu_item_id,
       item_name: item.name,
+      course_type: menuItemById.get(item.menu_item_id)?.course_type ?? 'main',
+      station_id: menuItemById.get(item.menu_item_id)?.station_id ?? null,
       quantity: item.quantity,
       unit_price: item.price,
       status: 'sent',

@@ -1,16 +1,27 @@
-import { formatPrice, type CourseCategoryRow, type MenuCategoryRow, type MenuItemRow } from '@/lib/venueMenu'
+import {
+  formatPrice,
+  type CourseCategoryRow,
+  type MenuCategoryRow,
+  type MenuItemRow,
+  type ModifierGroupRow,
+  type ModifierOptionRow,
+} from '@/lib/venueMenu'
 import { AddToCartButton } from './AddToCartButton'
 
 export function MenuList({
   orderedCourseCats,
   menuCatsByCourse,
   itemsByCategory,
+  groupsByItem,
+  optionsByGroup,
   currency,
   showAddButtons = false,
 }: {
   orderedCourseCats: CourseCategoryRow[]
   menuCatsByCourse: Map<string, MenuCategoryRow[]>
   itemsByCategory: Map<string, MenuItemRow[]>
+  groupsByItem: Map<string, ModifierGroupRow[]>
+  optionsByGroup: Map<string, ModifierOptionRow[]>
   currency: string
   // Only true on the per-table page when the venue has online ordering
   // enabled — the tableless page never shows these, and neither does the
@@ -95,6 +106,14 @@ export function MenuList({
                       {showAddButtons && item.is_available && (
                         <AddToCartButton
                           item={{ id: item.id, name: item.name, price: item.price }}
+                          groups={groupsByItem.get(item.id) ?? []}
+                          optionsByGroupId={Object.fromEntries(
+                            (groupsByItem.get(item.id) ?? []).map((g) => [
+                              g.id,
+                              optionsByGroup.get(g.id) ?? [],
+                            ]),
+                          )}
+                          currency={currency}
                         />
                       )}
                     </div>

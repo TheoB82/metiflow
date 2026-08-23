@@ -24,6 +24,26 @@ export type CourseCategoryRow = {
   display_order: number
 }
 
+export type ModifierGroupRow = {
+  id: string
+  menu_item_id: string
+  name: string
+  is_required: boolean
+  min_choices: number
+  max_choices: number
+  allows_quantity: boolean
+  display_order: number
+}
+
+export type ModifierOptionRow = {
+  id: string
+  group_id: string
+  name: string
+  price_adj_pence: number
+  is_available: boolean
+  display_order: number
+}
+
 export type Venue = {
   id: string
   name: string
@@ -61,7 +81,7 @@ export async function resolveVenue(slugOrId: string): Promise<Venue | null> {
 // mid-service is visible to the customer, not silently invisible.
 export async function fetchMenu(venueId: string) {
   const sb = createAdminSupabase()
-  const [{ data: courseCats }, { data: menuCats }, { data: items }] = await Promise.all([
+  const [{ data: courseCats }, { data: menuCats }, { data: items }, { data: groups }, { data: options }] = await Promise.all([
     sb
       .from('course_categories')
       .select('id, name, display_order')
@@ -79,7 +99,31 @@ export async function fetchMenu(venueId: string) {
       .eq('venue_id', venueId)
       .eq('is_active', true)
       .order('display_order') as unknown as Promise<{ data: MenuItemRow[] | null }>,
+    sb
+      .from('modifier_groups')
+      .select('id, menu_item_id, name, is_required, min_choices, max_choices, allows_quantity, display_order')
+      .eq('venue_id', venueId)
+      .order('display_order') as unknown as Promise<{ data: ModifierGroupRow[] | null }>,
+    sb
+      .from('modifier_options')
+      .select('id, group_id, name, price_adj_pence, is_available, display_order')
+      .eq('venue_id', venueId)
+      .eq('is_available', true)
+      .order('display_order') as unknown as Promise<{ data: ModifierOptionRow[] | null }>,
   ])
+
+  const groupsByItem = new Map<string, ModifierGroupRow[]>()
+  for (const g of groups ?? []) {
+    const list = groupsByItem.get(g.menu_item_id) ?? []
+    list.push(g)
+    groupsByItem.set(g.menu_item_id, list)
+  }
+  const optionsByGroup = new Map<string, ModifierOptionRow[]>()
+  for (const o of options ?? []) {
+    const list = optionsByGroup.get(o.group_id) ?? []
+    list.push(o)
+    optionsByGroup.set(o.group_id, list)
+  }
 
   const itemsByCategory = new Map<string, MenuItemRow[]>()
   for (const item of items ?? []) {
@@ -104,5 +148,5 @@ export async function fetchMenu(venueId: string) {
     { id: '__none__', name: '', display_order: 999999 },
   ].filter((cc) => (menuCatsByCourse.get(cc.id)?.length ?? 0) > 0)
 
-  return { orderedCourseCats, menuCatsByCourse, itemsByCategory }
+  return { orderedCourseCats, menuCatsByCourse, itemsByCategory, groupsByItem, optionsByGroup }
 }

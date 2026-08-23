@@ -51,7 +51,7 @@ export function CartBar({ currency }: { currency: string }) {
         >
           {cart.map((item, i) => (
             <div
-              key={item.menu_item_id}
+              key={item.id}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -63,13 +63,18 @@ export function CartBar({ currency }: { currency: string }) {
             >
               <div style={{ flex: 1 }}>
                 <div style={{ fontWeight: 600, fontSize: '0.875rem' }}>{item.name}</div>
+                {item.modifier_notes && (
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-2)' }}>
+                    {item.modifier_notes}
+                  </div>
+                )}
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-2)' }}>
                   {formatPrice(item.price, currency)} each
                 </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <button
-                  onClick={() => updateQuantity(item.menu_item_id, item.quantity - 1)}
+                  onClick={() => updateQuantity(item.id, item.quantity - 1)}
                   style={quantityBtnStyle}
                   aria-label={`Remove one ${item.name}`}
                 >
@@ -79,7 +84,7 @@ export function CartBar({ currency }: { currency: string }) {
                   {item.quantity}
                 </span>
                 <button
-                  onClick={() => updateQuantity(item.menu_item_id, item.quantity + 1)}
+                  onClick={() => updateQuantity(item.id, item.quantity + 1)}
                   style={quantityBtnStyle}
                   aria-label={`Add one more ${item.name}`}
                 >

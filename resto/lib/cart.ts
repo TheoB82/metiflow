@@ -1,54 +1,70 @@
 import { createAdminSupabase } from './supabase-server'
 
 export type CartItem = {
+  id: string
   menu_item_id: string
   name: string
   price: number
   quantity: number
+  modifier_notes: string | null
 }
 
 export async function getCart(venueId: string, tableLabel: string): Promise<CartItem[]> {
   const sb = createAdminSupabase()
   const { data } = await sb
     .from('qr_cart_items')
-    .select('menu_item_id, name, price, quantity')
+    .select('id, menu_item_id, name, price, quantity, modifier_notes')
     .eq('venue_id', venueId)
     .eq('table_label', tableLabel)
     .order('added_at')
   return (data as CartItem[]) ?? []
 }
 
+// A plain item (no modifiers) taps repeatedly onto the same line — merges by
+// incrementing quantity, same as before. A customized item (modifierNotes
+// set) always gets its own line: two "Gyros" with different modifier
+// choices are different orders, and can't be merged into one quantity.
+// `price` here is already the effective per-unit price (base + any modifier
+// price adjustments), matching how order_items.unit_price works everywhere
+// else in the system.
 export async function addToCart(
   venueId: string,
   tableLabel: string,
   item: { id: string; name: string; price: number },
+  opts?: { modifierNotes?: string; quantity?: number },
 ) {
   const sb = createAdminSupabase()
-  const { data: existing } = await sb
-    .from('qr_cart_items')
-    .select('quantity')
-    .eq('venue_id', venueId)
-    .eq('table_label', tableLabel)
-    .eq('menu_item_id', item.id)
-    .maybeSingle()
+  const quantity = opts?.quantity ?? 1
+  const modifierNotes = opts?.modifierNotes ?? null
 
-  if (existing) {
-    await sb
+  if (!modifierNotes) {
+    const { data: existing } = await sb
       .from('qr_cart_items')
-      .update({ quantity: existing.quantity + 1 })
+      .select('id, quantity')
       .eq('venue_id', venueId)
       .eq('table_label', tableLabel)
       .eq('menu_item_id', item.id)
-  } else {
-    await sb.from('qr_cart_items').insert({
-      venue_id: venueId,
-      table_label: tableLabel,
-      menu_item_id: item.id,
-      name: item.name,
-      price: item.price,
-      quantity: 1,
-    })
+      .is('modifier_notes', null)
+      .maybeSingle()
+
+    if (existing) {
+      await sb
+        .from('qr_cart_items')
+        .update({ quantity: existing.quantity + quantity })
+        .eq('id', existing.id)
+      return
+    }
   }
+
+  await sb.from('qr_cart_items').insert({
+    venue_id: venueId,
+    table_label: tableLabel,
+    menu_item_id: item.id,
+    name: item.name,
+    price: item.price,
+    quantity,
+    modifier_notes: modifierNotes,
+  })
 }
 
 export type PlaceOrderResult =
@@ -126,6 +142,7 @@ export async function placeOrder(
       station_id: menuItemById.get(item.menu_item_id)?.station_id ?? null,
       quantity: item.quantity,
       unit_price: item.price,
+      modifier_notes: item.modifier_notes,
       status: 'sent',
       sent_at: now,
     })),
@@ -144,11 +161,14 @@ export async function placeOrder(
 }
 
 // quantity <= 0 removes the line entirely rather than leaving a 0 row
-// sitting in the cart.
+// sitting in the cart. Keyed by the cart row's own id rather than
+// menu_item_id — the same menu item can now appear as several distinct
+// lines (different modifier choices), so menu_item_id alone no longer
+// identifies a single line.
 export async function setQuantity(
   venueId: string,
   tableLabel: string,
-  menuItemId: string,
+  cartItemId: string,
   quantity: number,
 ) {
   const sb = createAdminSupabase()
@@ -156,15 +176,15 @@ export async function setQuantity(
     await sb
       .from('qr_cart_items')
       .delete()
+      .eq('id', cartItemId)
       .eq('venue_id', venueId)
       .eq('table_label', tableLabel)
-      .eq('menu_item_id', menuItemId)
   } else {
     await sb
       .from('qr_cart_items')
       .update({ quantity })
+      .eq('id', cartItemId)
       .eq('venue_id', venueId)
       .eq('table_label', tableLabel)
-      .eq('menu_item_id', menuItemId)
   }
 }

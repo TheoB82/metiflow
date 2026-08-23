@@ -15,18 +15,19 @@ export async function addToCartAction(
   venueId: string,
   table: string,
   item: { id: string; name: string; price: number },
+  opts?: { modifierNotes?: string; quantity?: number },
 ) {
-  await addToCart(venueId, table, item)
+  await addToCart(venueId, table, item, opts)
   return getCart(venueId, table)
 }
 
 export async function setQuantityAction(
   venueId: string,
   table: string,
-  menuItemId: string,
+  cartItemId: string,
   quantity: number,
 ) {
-  await setQuantity(venueId, table, menuItemId, quantity)
+  await setQuantity(venueId, table, cartItemId, quantity)
   return getCart(venueId, table)
 }
 

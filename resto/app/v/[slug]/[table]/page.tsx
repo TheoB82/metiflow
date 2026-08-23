@@ -27,7 +27,8 @@ export default async function VenueTablePage({
   const venue = await resolveVenue(slug)
   if (!venue) notFound()
 
-  const { orderedCourseCats, menuCatsByCourse, itemsByCategory } = await fetchMenu(venue.id)
+  const { orderedCourseCats, menuCatsByCourse, itemsByCategory, groupsByItem, optionsByGroup } =
+    await fetchMenu(venue.id)
   const venueId = venue.id
   const ordering = venue.enable_qr_ordering
   const initialCart = ordering ? await getCart(venueId, tableLabel) : []
@@ -60,6 +61,8 @@ export default async function VenueTablePage({
           orderedCourseCats={orderedCourseCats}
           menuCatsByCourse={menuCatsByCourse}
           itemsByCategory={itemsByCategory}
+          groupsByItem={groupsByItem}
+          optionsByGroup={optionsByGroup}
           currency={venue.currency}
           showAddButtons={ordering}
         />

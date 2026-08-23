@@ -18,7 +18,8 @@ export default async function VenueMenuPage({
   const venue = await resolveVenue(slug)
   if (!venue) notFound()
 
-  const { orderedCourseCats, menuCatsByCourse, itemsByCategory } = await fetchMenu(venue.id)
+  const { orderedCourseCats, menuCatsByCourse, itemsByCategory, groupsByItem, optionsByGroup } =
+    await fetchMenu(venue.id)
 
   return (
     <div style={{ minHeight: '100vh', padding: '2rem 1.5rem' }}>
@@ -36,6 +37,8 @@ export default async function VenueMenuPage({
           orderedCourseCats={orderedCourseCats}
           menuCatsByCourse={menuCatsByCourse}
           itemsByCategory={itemsByCategory}
+          groupsByItem={groupsByItem}
+          optionsByGroup={optionsByGroup}
           currency={venue.currency}
         />
 

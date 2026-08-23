@@ -11,8 +11,11 @@ import {
 
 type CartContextValue = {
   cart: CartItem[]
-  addItem: (item: { id: string; name: string; price: number }) => void
-  updateQuantity: (menuItemId: string, quantity: number) => void
+  addItem: (
+    item: { id: string; name: string; price: number },
+    opts?: { modifierNotes?: string; quantity?: number },
+  ) => void
+  updateQuantity: (cartItemId: string, quantity: number) => void
   placeOrder: () => Promise<void>
   placing: boolean
   orderPlaced: boolean
@@ -56,20 +59,23 @@ export function CartProvider({
     return () => clearInterval(id)
   }, [venueId, table, orderPlaced])
 
-  async function addItem(item: { id: string; name: string; price: number }) {
+  async function addItem(
+    item: { id: string; name: string; price: number },
+    opts?: { modifierNotes?: string; quantity?: number },
+  ) {
     pending.current = true
     // Adding an item after a completed order means the table is starting a
     // fresh round — drop the "order sent" confirmation so the bar goes back
     // to showing the (new) cart instead of a stale success message.
     setOrderPlaced(false)
-    const fresh = await addToCartAction(venueId, table, item)
+    const fresh = await addToCartAction(venueId, table, item, opts)
     setCart(fresh)
     pending.current = false
   }
 
-  async function updateQuantity(menuItemId: string, quantity: number) {
+  async function updateQuantity(cartItemId: string, quantity: number) {
     pending.current = true
-    const fresh = await setQuantityAction(venueId, table, menuItemId, quantity)
+    const fresh = await setQuantityAction(venueId, table, cartItemId, quantity)
     setCart(fresh)
     pending.current = false
   }

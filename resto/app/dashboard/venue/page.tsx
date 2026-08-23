@@ -23,6 +23,7 @@ function VenueEditForm() {
   const [tableCount, setTableCount] = useState(10)
   const [hours, setHours] = useState<Hours>(defaultHours())
   const [slug, setSlug] = useState('')
+  const [qrOrdering, setQrOrdering] = useState(false)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -47,6 +48,7 @@ function VenueEditForm() {
         try { const s = JSON.parse(data.settings_json); if (s.table_count) setTableCount(s.table_count) } catch { /* */ }
       }
       setSlug(data.slug ?? '')
+      setQrOrdering(data.enable_qr_ordering ?? false)
       setLoading(false)
     }
     load()
@@ -71,6 +73,7 @@ function VenueEditForm() {
       enable_takeaway: takeaway,
       opening_hours: encodeHours(hours),
       slug: finalSlug || null,
+      enable_qr_ordering: qrOrdering,
     }).eq('id', venueId!)
     if (err) { setError(err.message); setSaving(false); return }
 
@@ -163,18 +166,18 @@ function VenueEditForm() {
           {t('publicPageTitle')}
           <span style={{
             fontSize: '0.6875rem', fontWeight: 700, padding: '2px 8px', borderRadius: 99,
-            background: 'var(--surface-2)', color: 'var(--text-2)', border: '1px solid var(--border)',
-          }}>{t('publicPageComingSoon')}</span>
+            background: '#f0fdf4', color: '#15803d', border: '1px solid #86efac',
+          }}>{t('publicPageLive')}</span>
         </h2>
         <p style={{ fontSize: '0.8125rem', color: 'var(--text-2)', marginBottom: '0.75rem' }}>{t('publicPageDesc')}</p>
-        <div className="field">
+        <div className="field" style={{ marginBottom: '0.75rem' }}>
           <label>Page address</label>
           <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
             <span style={{
               padding: '0.625rem 0 0.625rem 0.875rem', fontSize: '0.9375rem', color: 'var(--text-3)',
               border: '1.5px solid var(--border)', borderRight: 'none', borderRadius: '8px 0 0 8px',
               background: 'var(--surface-2)', whiteSpace: 'nowrap',
-            }}>metiflow.com/v/</span>
+            }}>resto.metiflow.com/v/</span>
             <input
               value={slug}
               onChange={e => setSlug(e.target.value)}
@@ -182,8 +185,21 @@ function VenueEditForm() {
               style={{ borderRadius: '0 8px 8px 0' }}
             />
           </div>
-          <span className="hint">Reserved now so the link is stable once ordering goes live — nothing is publicly visible here yet.</span>
+          <span className="hint">Table QR codes work immediately either way — they use the venue automatically, no address needed. This is only for sharing a general link (website, socials).</span>
         </div>
+        <label style={{
+          display: 'flex', alignItems: 'center', gap: '1rem', padding: '0.75rem 1rem',
+          border: `1.5px solid ${qrOrdering ? 'var(--brand)' : 'var(--border)'}`,
+          background: qrOrdering ? 'var(--brand-light)' : 'var(--surface)',
+          borderRadius: 8, cursor: 'pointer', transition: 'all 0.15s',
+        }}>
+          <input type="checkbox" checked={qrOrdering} onChange={e => setQrOrdering(e.target.checked)}
+            style={{ accentColor: 'var(--brand)', width: 16, height: 16, flexShrink: 0 }} />
+          <div>
+            <div style={{ fontWeight: 600, fontSize: '0.9375rem' }}>{t('enableOrdering')}</div>
+            <div style={{ fontSize: '0.8125rem', color: 'var(--text-2)' }}>{t('enableOrderingDesc')}</div>
+          </div>
+        </label>
       </section>
 
       <div style={{ display: 'flex', gap: '0.75rem', paddingTop: '0.5rem', borderTop: '1px solid var(--border)' }}>

@@ -51,10 +51,12 @@ export const strings: { en: Dict; el: Partial<Dict>; de: Partial<Dict> } = {
     featureCloudHistory: 'Keep order history in the cloud',
     featureCloudHistoryDesc: 'Access past orders from any device, not just the one that took them',
 
-    // ── Public venue page (design-ready, not live) ──────────────────────
+    // ── Public venue page (live) ─────────────────────────────────────────
     publicPageTitle: 'Your venue page',
-    publicPageComingSoon: 'Coming soon',
-    publicPageDesc: 'Customers will be able to view your menu and order here — for a table, or for delivery/collection.',
+    publicPageLive: 'Live',
+    publicPageDesc: 'Customers see your menu here when they scan a table QR code, and can call a waiter — turn on ordering below if you also want them to add items and build a running bill.',
+    enableOrdering: 'Allow online ordering',
+    enableOrderingDesc: 'Customers can add items to a shared bill from the table page. Call Waiter works either way.',
   },
   el: {
     // TODO(i18n): Greek strings — see lib/i18n.ts header for the fallback contract.

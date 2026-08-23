@@ -1,15 +1,21 @@
 import { formatPrice, type CourseCategoryRow, type MenuCategoryRow, type MenuItemRow } from '@/lib/venueMenu'
+import { AddToCartButton } from './AddToCartButton'
 
 export function MenuList({
   orderedCourseCats,
   menuCatsByCourse,
   itemsByCategory,
   currency,
+  showAddButtons = false,
 }: {
   orderedCourseCats: CourseCategoryRow[]
   menuCatsByCourse: Map<string, MenuCategoryRow[]>
   itemsByCategory: Map<string, MenuItemRow[]>
   currency: string
+  // Only true on the per-table page when the venue has online ordering
+  // enabled — the tableless page never shows these, and neither does the
+  // table page when ordering is off (browse + Call Waiter only).
+  showAddButtons?: boolean
 }) {
   return (
     <>
@@ -82,8 +88,15 @@ export function MenuList({
                         </div>
                       )}
                     </div>
-                    <div style={{ fontWeight: 600, fontSize: '0.9375rem', whiteSpace: 'nowrap' }}>
-                      {formatPrice(item.price, currency)}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                      <div style={{ fontWeight: 600, fontSize: '0.9375rem', whiteSpace: 'nowrap' }}>
+                        {formatPrice(item.price, currency)}
+                      </div>
+                      {showAddButtons && item.is_available && (
+                        <AddToCartButton
+                          item={{ id: item.id, name: item.name, price: item.price }}
+                        />
+                      )}
                     </div>
                   </div>
                 ))}

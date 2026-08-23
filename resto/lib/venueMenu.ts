@@ -1,4 +1,5 @@
 import { createAdminSupabase } from './supabase-server'
+export { formatPrice } from './format'
 
 export type MenuItemRow = {
   id: string
@@ -104,9 +105,4 @@ export async function fetchMenu(venueId: string) {
   ].filter((cc) => (menuCatsByCourse.get(cc.id)?.length ?? 0) > 0)
 
   return { orderedCourseCats, menuCatsByCourse, itemsByCategory }
-}
-
-export function formatPrice(pence: number, currency: string) {
-  const symbol = { GBP: '£', EUR: '€', USD: '$' }[currency] ?? currency + ' '
-  return `${symbol}${(pence / 100).toFixed(2)}`
 }

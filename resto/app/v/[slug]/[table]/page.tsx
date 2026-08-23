@@ -2,7 +2,10 @@ import { Logo } from '@/components/Logo'
 import { MenuList } from '@/components/MenuList'
 import { CallWaiterButton } from '@/components/CallWaiterButton'
 import { CategoryQuickNav } from '@/components/CategoryQuickNav'
+import { CartProvider } from '@/components/CartProvider'
+import { CartBar } from '@/components/CartBar'
 import { resolveVenue, fetchMenu } from '@/lib/venueMenu'
+import { getCart } from '@/lib/cart'
 import { notFound } from 'next/navigation'
 import { callWaiterAction } from './actions'
 
@@ -26,8 +29,10 @@ export default async function VenueTablePage({
 
   const { orderedCourseCats, menuCatsByCourse, itemsByCategory } = await fetchMenu(venue.id)
   const venueId = venue.id
+  const ordering = venue.enable_qr_ordering
+  const initialCart = ordering ? await getCart(venueId, tableLabel) : []
 
-  return (
+  const page = (
     <div style={{ minHeight: '100vh', padding: '2rem 1.5rem' }}>
       <div style={{ width: '100%', maxWidth: 640, margin: '0 auto' }}>
         <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
@@ -56,12 +61,23 @@ export default async function VenueTablePage({
           menuCatsByCourse={menuCatsByCourse}
           itemsByCategory={itemsByCategory}
           currency={venue.currency}
+          showAddButtons={ordering}
         />
+
+        {ordering && <CartBar currency={venue.currency} />}
 
         <p style={{ textAlign: 'center', marginTop: '1.5rem', color: 'var(--text-3)', fontSize: '0.8125rem' }}>
           powered by metiflow
         </p>
       </div>
     </div>
+  )
+
+  return ordering ? (
+    <CartProvider venueId={venueId} table={tableLabel} initialCart={initialCart}>
+      {page}
+    </CartProvider>
+  ) : (
+    page
   )
 }

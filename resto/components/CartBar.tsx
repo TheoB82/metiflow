@@ -5,11 +5,33 @@ import { useCart } from './CartProvider'
 import { formatPrice } from '@/lib/format'
 
 export function CartBar({ currency }: { currency: string }) {
-  const { cart, updateQuantity } = useCart()
+  const { cart, updateQuantity, placeOrder, placing, orderPlaced, placeOrderError } = useCart()
   const [expanded, setExpanded] = useState(false)
 
   const count = cart.reduce((n, i) => n + i.quantity, 0)
   const total = cart.reduce((n, i) => n + i.quantity * i.price, 0)
+
+  if (orderPlaced) {
+    return (
+      <div
+        className="card"
+        style={{
+          position: 'sticky',
+          bottom: '1rem',
+          marginTop: '1.5rem',
+          zIndex: 10,
+          padding: '1rem',
+          textAlign: 'center',
+          boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
+        }}
+      >
+        <div style={{ fontWeight: 600 }}>Order sent to the kitchen ✓</div>
+        <div style={{ fontSize: '0.8125rem', color: 'var(--text-2)', marginTop: 4 }}>
+          Add more items any time to start a new order.
+        </div>
+      </div>
+    )
+  }
 
   if (count === 0) return null
 
@@ -69,6 +91,21 @@ export function CartBar({ currency }: { currency: string }) {
               </div>
             </div>
           ))}
+
+          {placeOrderError && (
+            <div style={{ color: '#b91c1c', fontSize: '0.8125rem', padding: '0.5rem 0' }}>
+              {placeOrderError}
+            </div>
+          )}
+
+          <button
+            onClick={placeOrder}
+            disabled={placing}
+            className="btn-primary"
+            style={{ width: '100%', marginTop: '0.5rem' }}
+          >
+            {placing ? 'Placing order…' : `Place order · ${formatPrice(total, currency)}`}
+          </button>
         </div>
       )}
 

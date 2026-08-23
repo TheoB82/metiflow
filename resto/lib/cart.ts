@@ -51,6 +51,84 @@ export async function addToCart(
   }
 }
 
+export type PlaceOrderResult =
+  | { ok: true }
+  | { ok: false; error: string }
+
+// Converts the standing qr_cart_items rows into a real order the venue's
+// kitchen/table devices already know how to display — same orders/order_items
+// tables and column shapes SupabaseOrderSync pushes/pulls in the Flutter app
+// (lib/core/services/supabase_order_sync.dart), so this order syncs down to
+// every device exactly like one placed by staff. Written straight to
+// 'sent'/'sent' status (order/items) since there's no staff step in between
+// to "fire" it — placing the order from the customer's phone IS the fire.
+export async function placeOrder(
+  venueId: string,
+  tableLabel: string,
+): Promise<PlaceOrderResult> {
+  const sb = createAdminSupabase()
+  const items = await getCart(venueId, tableLabel)
+  if (items.length === 0) {
+    return { ok: false, error: 'Cart is empty.' }
+  }
+
+  // A QR code is printed per physical table, but the label it carries is
+  // free text — resolve it against the venue's configured tables so the
+  // order lands as a normal dine-in ticket against that table wherever
+  // possible. No match (label doesn't correspond to any configured table,
+  // e.g. a mis-printed QR or a takeaway-only setup) still gets the order
+  // through as a takeaway ticket rather than silently failing or landing
+  // unlinked, with the raw label kept in customer_name so staff can find it.
+  const { data: table } = await sb
+    .from('dining_tables')
+    .select('id')
+    .eq('venue_id', venueId)
+    .ilike('name', tableLabel)
+    .maybeSingle()
+
+  const now = new Date().toISOString()
+  const orderId = crypto.randomUUID()
+
+  const { error: orderError } = await sb.from('orders').insert({
+    id: orderId,
+    venue_id: venueId,
+    table_id: table?.id ?? null,
+    order_type: table?.id ? 'dine_in' : 'takeaway',
+    customer_name: table?.id ? null : `QR order — Table ${tableLabel}`,
+    status: 'sent',
+    device_id: 'qr-customer',
+    created_at: now,
+    updated_at: now,
+  })
+  if (orderError) {
+    return { ok: false, error: orderError.message }
+  }
+
+  const { error: itemsError } = await sb.from('order_items').insert(
+    items.map((item) => ({
+      id: crypto.randomUUID(),
+      order_id: orderId,
+      menu_item_id: item.menu_item_id,
+      item_name: item.name,
+      quantity: item.quantity,
+      unit_price: item.price,
+      status: 'sent',
+      sent_at: now,
+    })),
+  )
+  if (itemsError) {
+    return { ok: false, error: itemsError.message }
+  }
+
+  await sb
+    .from('qr_cart_items')
+    .delete()
+    .eq('venue_id', venueId)
+    .eq('table_label', tableLabel)
+
+  return { ok: true }
+}
+
 // quantity <= 0 removes the line entirely rather than leaving a 0 row
 // sitting in the cart.
 export async function setQuantity(

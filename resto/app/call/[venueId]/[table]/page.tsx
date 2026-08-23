@@ -15,44 +15,32 @@ import { Logo } from '@/components/Logo'
 // service-role-to-service-role, bypassing all RLS, failed identically).
 // A live channel.send() from an actual websocket connection was the only
 // thing that worked in that same test.
-// TEMPORARY: writes each step to _debug_callwaiter_log so the actual
-// serverless execution can be inspected directly via SQL — Vercel's log
-// CLI wasn't cooperating for tailing this. Remove once delivery is
-// confirmed working from a real device.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function dbg(client: any, step: string, detail: string) {
-  try {
-    await client.from('_debug_callwaiter_log').insert({ step, detail })
-  } catch {
-    // best-effort only
-  }
-}
-
+//
+// Also requires SUPABASE_SERVICE_ROLE_KEY to actually be set in Vercel's
+// Production environment, not just in local .env.local — it wasn't,
+// which silently no-op'd every call here (createClient with an undefined
+// key doesn't throw) until this was caught by temporarily logging each
+// step to a scratch table and finding execution never even reached
+// "start". Confirmed end-to-end working 2026-08-23.
 async function broadcastCallWaiter(venueId: string, tableLabel: string) {
   const client = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
   )
-  await dbg(client, 'start', `venue=${venueId} table=${tableLabel}`)
   const channel = client.channel(`kf-alerts-${venueId}`, {
     config: { private: true },
   })
 
   await new Promise<void>((resolve) => {
     // Don't let a stuck connection hang the customer's page indefinitely.
-    const timeout = setTimeout(() => {
-      dbg(client, 'timeout', 'subscribe never reached SUBSCRIBED within 8s')
-      resolve()
-    }, 8000)
-    channel.subscribe(async (status, err) => {
-      await dbg(client, 'subscribe_status', `${status} ${err ? err.message : ''}`)
+    const timeout = setTimeout(resolve, 8000)
+    channel.subscribe(async (status) => {
       if (status === 'SUBSCRIBED') {
-        const result = await channel.send({
+        await channel.send({
           type: 'broadcast',
           event: 'call_waiter',
           payload: { table: tableLabel },
         })
-        await dbg(client, 'send_result', String(result))
         clearTimeout(timeout)
         resolve()
       }
@@ -60,7 +48,6 @@ async function broadcastCallWaiter(venueId: string, tableLabel: string) {
   })
 
   await client.removeChannel(channel)
-  await dbg(client, 'done', 'channel removed')
 }
 
 export default async function CallWaiterPage({

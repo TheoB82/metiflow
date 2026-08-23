@@ -71,13 +71,62 @@ export type PlaceOrderResult =
   | { ok: true }
   | { ok: false; error: string }
 
+// A QR code is printed per physical table, but the label it carries is free
+// text — resolve it against the venue's configured tables so orders land as
+// a normal dine-in ticket against that table wherever possible. No match
+// (label doesn't correspond to any configured table, e.g. a mis-printed QR
+// or a takeaway-only setup) still gets the order through as a takeaway
+// ticket rather than silently failing or landing unlinked, with the raw
+// label kept in customer_name so staff can find it — and so later rounds
+// from the same table can find the same standing order again (see
+// findActiveOrder below).
+async function resolveTable(
+  sb: ReturnType<typeof createAdminSupabase>,
+  venueId: string,
+  tableLabel: string,
+) {
+  const { data } = await sb
+    .from('dining_tables')
+    .select('id')
+    .eq('venue_id', venueId)
+    .ilike('name', tableLabel)
+    .maybeSingle()
+  return data
+}
+
+// A table's bill is one running order for the whole sitting, with items
+// added as rounds come in — not a new order per "place order" tap. Without
+// this, a second round creates a second, unrelated order row: the kitchen
+// ticket for it is still real, but staff screens that look up "the order
+// for this table" (the bill, the table summary) only know about whichever
+// order they found first, so the second round's items silently don't show
+// up there even though they exist.
+async function findActiveOrder(
+  sb: ReturnType<typeof createAdminSupabase>,
+  venueId: string,
+  tableLabel: string,
+  tableId: string | null,
+) {
+  const query = sb
+    .from('orders')
+    .select('id')
+    .eq('venue_id', venueId)
+    .not('status', 'in', '(paid,cancelled)')
+    .order('created_at', { ascending: false })
+    .limit(1)
+  const { data } = tableId
+    ? await query.eq('table_id', tableId)
+    : await query.eq('customer_name', `QR order — Table ${tableLabel}`)
+  return data?.[0]?.id as string | undefined
+}
+
 // Converts the standing qr_cart_items rows into a real order the venue's
 // kitchen/table devices already know how to display — same orders/order_items
 // tables and column shapes SupabaseOrderSync pushes/pulls in the Flutter app
 // (lib/core/services/supabase_order_sync.dart), so this order syncs down to
-// every device exactly like one placed by staff. Written straight to
-// 'sent'/'sent' status (order/items) since there's no staff step in between
-// to "fire" it — placing the order from the customer's phone IS the fire.
+// every device exactly like one placed by staff. Items are written straight
+// to 'sent' status since there's no staff step in between to "fire" them —
+// placing the order from the customer's phone IS the fire.
 export async function placeOrder(
   venueId: string,
   tableLabel: string,
@@ -88,19 +137,7 @@ export async function placeOrder(
     return { ok: false, error: 'Cart is empty.' }
   }
 
-  // A QR code is printed per physical table, but the label it carries is
-  // free text — resolve it against the venue's configured tables so the
-  // order lands as a normal dine-in ticket against that table wherever
-  // possible. No match (label doesn't correspond to any configured table,
-  // e.g. a mis-printed QR or a takeaway-only setup) still gets the order
-  // through as a takeaway ticket rather than silently failing or landing
-  // unlinked, with the raw label kept in customer_name so staff can find it.
-  const { data: table } = await sb
-    .from('dining_tables')
-    .select('id')
-    .eq('venue_id', venueId)
-    .ilike('name', tableLabel)
-    .maybeSingle()
+  const table = await resolveTable(sb, venueId, tableLabel)
 
   // The kitchen display routes tickets by station, and grouping is keyed
   // off course_type — both live on the menu item, not the cart row, so they
@@ -115,21 +152,26 @@ export async function placeOrder(
   const menuItemById = new Map((menuItems ?? []).map((mi) => [mi.id, mi]))
 
   const now = new Date().toISOString()
-  const orderId = crypto.randomUUID()
 
-  const { error: orderError } = await sb.from('orders').insert({
-    id: orderId,
-    venue_id: venueId,
-    table_id: table?.id ?? null,
-    order_type: table?.id ? 'dine_in' : 'takeaway',
-    customer_name: table?.id ? null : `QR order — Table ${tableLabel}`,
-    status: 'sent',
-    device_id: 'qr-customer',
-    created_at: now,
-    updated_at: now,
-  })
-  if (orderError) {
-    return { ok: false, error: orderError.message }
+  let orderId = await findActiveOrder(sb, venueId, tableLabel, table?.id ?? null)
+  if (orderId) {
+    await sb.from('orders').update({ updated_at: now }).eq('id', orderId)
+  } else {
+    orderId = crypto.randomUUID()
+    const { error: orderError } = await sb.from('orders').insert({
+      id: orderId,
+      venue_id: venueId,
+      table_id: table?.id ?? null,
+      order_type: table?.id ? 'dine_in' : 'takeaway',
+      customer_name: table?.id ? null : `QR order — Table ${tableLabel}`,
+      status: 'sent',
+      device_id: 'qr-customer',
+      created_at: now,
+      updated_at: now,
+    })
+    if (orderError) {
+      return { ok: false, error: orderError.message }
+    }
   }
 
   const { error: itemsError } = await sb.from('order_items').insert(
@@ -158,6 +200,43 @@ export async function placeOrder(
     .eq('table_label', tableLabel)
 
   return { ok: true }
+}
+
+export type PlacedOrderItem = {
+  name: string
+  quantity: number
+  unit_price: number
+  modifier_notes: string | null
+}
+
+// The standing order for this table across every round placed so far, for
+// the customer to check back on ("what have we ordered?") — reads the real
+// orders/order_items rows (the same ones staff/kitchen see), not the
+// already-cleared qr_cart_items, since a placed order can span several
+// "place order" taps.
+export async function getPlacedOrder(
+  venueId: string,
+  tableLabel: string,
+): Promise<{ items: PlacedOrderItem[]; total: number } | null> {
+  const sb = createAdminSupabase()
+  const table = await resolveTable(sb, venueId, tableLabel)
+  const orderId = await findActiveOrder(sb, venueId, tableLabel, table?.id ?? null)
+  if (!orderId) return null
+
+  const { data } = await sb
+    .from('order_items')
+    .select('item_name, quantity, unit_price, modifier_notes')
+    .eq('order_id', orderId)
+    .order('sent_at')
+
+  const items = (data ?? []).map((i) => ({
+    name: i.item_name,
+    quantity: i.quantity,
+    unit_price: i.unit_price,
+    modifier_notes: i.modifier_notes,
+  }))
+  const total = items.reduce((s, i) => s + i.unit_price * i.quantity, 0)
+  return { items, total }
 }
 
 // quantity <= 0 removes the line entirely rather than leaving a 0 row

@@ -5,7 +5,7 @@ import { CategoryQuickNav } from '@/components/CategoryQuickNav'
 import { CartProvider } from '@/components/CartProvider'
 import { CartBar } from '@/components/CartBar'
 import { resolveVenue, fetchMenu } from '@/lib/venueMenu'
-import { getCart } from '@/lib/cart'
+import { getCart, getPlacedOrder } from '@/lib/cart'
 import { notFound } from 'next/navigation'
 import { callWaiterAction } from './actions'
 
@@ -32,6 +32,7 @@ export default async function VenueTablePage({
   const venueId = venue.id
   const ordering = venue.enable_qr_ordering
   const initialCart = ordering ? await getCart(venueId, tableLabel) : []
+  const initialPlacedOrder = ordering ? await getPlacedOrder(venueId, tableLabel) : null
 
   const page = (
     <div style={{ minHeight: '100vh', padding: '2rem 1.5rem' }}>
@@ -77,7 +78,12 @@ export default async function VenueTablePage({
   )
 
   return ordering ? (
-    <CartProvider venueId={venueId} table={tableLabel} initialCart={initialCart}>
+    <CartProvider
+      venueId={venueId}
+      table={tableLabel}
+      initialCart={initialCart}
+      initialPlacedOrder={initialPlacedOrder}
+    >
       {page}
     </CartProvider>
   ) : (

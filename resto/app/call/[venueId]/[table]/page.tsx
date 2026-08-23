@@ -26,6 +26,7 @@ export default async function CallWaiterPage({
         messages: [{
           topic: `realtime:kf-alerts-${venueId}`,
           event: 'broadcast',
+          private: true,
           payload: { type: 'broadcast', event: 'call_waiter', payload: { table: tableLabel } },
         }],
       }),

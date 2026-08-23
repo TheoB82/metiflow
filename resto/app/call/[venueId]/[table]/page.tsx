@@ -1,3 +1,4 @@
+import { createClient } from '@supabase/supabase-js'
 import { Logo } from '@/components/Logo'
 
 // Customer-facing "Call Staff" confirmation page, reached by scanning a
@@ -6,6 +7,42 @@ import { Logo } from '@/components/Logo'
 // Function response to text/plain unless the project is on Pro with a
 // custom function domain — the old /functions/v1/call-waiter endpoint could
 // never actually render this page on a phone, only show raw markup as text.
+//
+// Sends via a real realtime client connection (channel.send()), not the
+// REST /realtime/v1/api/broadcast endpoint — verified by direct test that
+// the REST endpoint accepts the request (202) but never actually delivers
+// to any subscriber on this project, authorization aside entirely (even
+// service-role-to-service-role, bypassing all RLS, failed identically).
+// A live channel.send() from an actual websocket connection was the only
+// thing that worked in that same test.
+async function broadcastCallWaiter(venueId: string, tableLabel: string) {
+  const client = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  )
+  const channel = client.channel(`kf-alerts-${venueId}`, {
+    config: { private: true },
+  })
+
+  await new Promise<void>((resolve) => {
+    // Don't let a stuck connection hang the customer's page indefinitely.
+    const timeout = setTimeout(resolve, 4000)
+    channel.subscribe(async (status) => {
+      if (status === 'SUBSCRIBED') {
+        await channel.send({
+          type: 'broadcast',
+          event: 'call_waiter',
+          payload: { table: tableLabel },
+        })
+        clearTimeout(timeout)
+        resolve()
+      }
+    })
+  })
+
+  await client.removeChannel(channel)
+}
+
 export default async function CallWaiterPage({
   params,
 }: {
@@ -15,23 +52,7 @@ export default async function CallWaiterPage({
   const tableLabel = decodeURIComponent(table)
 
   try {
-    await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/realtime/v1/api/broadcast`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
-        'apikey': process.env.SUPABASE_SERVICE_ROLE_KEY!,
-      },
-      body: JSON.stringify({
-        messages: [{
-          topic: `realtime:kf-alerts-${venueId}`,
-          event: 'broadcast',
-          private: true,
-          payload: { type: 'broadcast', event: 'call_waiter', payload: { table: tableLabel } },
-        }],
-      }),
-      cache: 'no-store',
-    })
+    await broadcastCallWaiter(venueId, tableLabel)
   } catch (e) {
     console.error('[call-waiter] broadcast error:', e)
   }

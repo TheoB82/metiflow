@@ -1,6 +1,7 @@
 import { Logo } from '@/components/Logo'
 import { MenuList } from '@/components/MenuList'
 import { CallWaiterButton } from '@/components/CallWaiterButton'
+import { CategoryQuickNav } from '@/components/CategoryQuickNav'
 import { resolveVenue, fetchMenu } from '@/lib/venueMenu'
 import { notFound } from 'next/navigation'
 import { callWaiterAction } from './actions'
@@ -47,6 +48,8 @@ export default async function VenueTablePage({
             }}
           />
         </div>
+
+        <CategoryQuickNav orderedCourseCats={orderedCourseCats} />
 
         <MenuList
           orderedCourseCats={orderedCourseCats}

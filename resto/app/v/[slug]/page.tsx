@@ -1,5 +1,6 @@
 import { Logo } from '@/components/Logo'
 import { MenuList } from '@/components/MenuList'
+import { CategoryQuickNav } from '@/components/CategoryQuickNav'
 import { resolveVenue, fetchMenu } from '@/lib/venueMenu'
 import { notFound } from 'next/navigation'
 
@@ -28,6 +29,8 @@ export default async function VenueMenuPage({
             {venue.name}
           </h1>
         </div>
+
+        <CategoryQuickNav orderedCourseCats={orderedCourseCats} />
 
         <MenuList
           orderedCourseCats={orderedCourseCats}

@@ -14,7 +14,11 @@ export function MenuList({
   return (
     <>
       {orderedCourseCats.map((cc) => (
-        <section key={cc.id} style={{ marginBottom: '2rem' }}>
+        <section
+          key={cc.id}
+          id={`cat-${cc.id}`}
+          style={{ marginBottom: '2rem', scrollMarginTop: '4.5rem' }}
+        >
           {cc.name && (
             <h2
               style={{

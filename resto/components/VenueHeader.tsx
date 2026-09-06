@@ -24,7 +24,16 @@ export function VenueHeader({
         <img
           src={venue.logo_url}
           alt={venue.name}
-          style={{ maxHeight: 72, maxWidth: '85%', objectFit: 'contain' }}
+          style={{
+            maxHeight: 72,
+            maxWidth: '85%',
+            objectFit: 'contain',
+            // Tailwind's preflight resets img to display:block, which
+            // otherwise ignores the parent's textAlign:center (that only
+            // affects inline content) and left-aligns the image instead.
+            display: 'block',
+            margin: '0 auto',
+          }}
         />
       ) : (
         <h1 style={{ fontSize: '1.5rem', fontWeight: 700, margin: 0 }}>{venue.name}</h1>

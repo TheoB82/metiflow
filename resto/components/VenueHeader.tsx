@@ -1,4 +1,5 @@
 import type { Venue } from '@/lib/venueMenu'
+import { Logo } from './Logo'
 
 // The venue's own identity leads the page — a logo image if the owner has
 // uploaded one, else their name as a plain heading — with metiflow reduced
@@ -33,16 +34,26 @@ export function VenueHeader({
           Table {tableLabel}
         </p>
       )}
-      <p
+      <div
         style={{
-          color: 'var(--text-3)',
-          fontSize: '0.6875rem',
-          letterSpacing: '0.3px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 6,
           marginTop: '0.75rem',
         }}
       >
-        via metiflow
-      </p>
+        <Logo size={16} iconOnly />
+        <span
+          style={{
+            color: 'var(--text-3)',
+            fontSize: '0.6875rem',
+            letterSpacing: '0.3px',
+          }}
+        >
+          via metiflow
+        </span>
+      </div>
     </div>
   )
 }

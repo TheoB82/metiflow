@@ -1,5 +1,13 @@
 'use client'
-export function Logo({ size = 48, compact = false }: { size?: number; compact?: boolean }) {
+export function Logo({
+  size = 48,
+  compact = false,
+  iconOnly = false,
+}: {
+  size?: number
+  compact?: boolean
+  iconOnly?: boolean
+}) {
   const box = (
     <div style={{
       width: size, height: size, flexShrink: 0,
@@ -9,6 +17,11 @@ export function Logo({ size = 48, compact = false }: { size?: number; compact?: 
       <span style={{ color: '#fff', fontSize: size * 0.6, fontWeight: 800, lineHeight: 1 }}>M</span>
     </div>
   )
+
+  // Just the icon mark, no wordmark text — for a small, secondary credit
+  // (e.g. VenueHeader's "via metiflow" line) where the venue's own name/
+  // logo is meant to be the actual heading.
+  if (iconOnly) return box
 
   if (compact) {
     return (

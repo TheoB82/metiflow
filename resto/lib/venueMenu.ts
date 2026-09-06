@@ -49,7 +49,10 @@ export type Venue = {
   name: string
   currency: string
   enable_qr_ordering: boolean
+  logo_url: string | null
 }
+
+const VENUE_COLUMNS = 'id, name, currency, enable_qr_ordering, logo_url'
 
 // Table QR codes are printed with the venue's raw id (always stable, no
 // dependency on the owner having set a friendly slug yet); a shared/
@@ -59,7 +62,7 @@ export async function resolveVenue(slugOrId: string): Promise<Venue | null> {
   const sb = createAdminSupabase()
   const bySlug = await sb
     .from('venues')
-    .select('id, name, currency, enable_qr_ordering')
+    .select(VENUE_COLUMNS)
     .eq('slug', slugOrId)
     .limit(1)
     .maybeSingle()
@@ -67,7 +70,7 @@ export async function resolveVenue(slugOrId: string): Promise<Venue | null> {
 
   const byId = await sb
     .from('venues')
-    .select('id, name, currency, enable_qr_ordering')
+    .select(VENUE_COLUMNS)
     .eq('id', slugOrId)
     .limit(1)
     .maybeSingle()

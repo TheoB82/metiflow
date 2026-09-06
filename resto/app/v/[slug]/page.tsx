@@ -1,4 +1,4 @@
-import { Logo } from '@/components/Logo'
+import { VenueHeader } from '@/components/VenueHeader'
 import { MenuList } from '@/components/MenuList'
 import { CategoryQuickNav } from '@/components/CategoryQuickNav'
 import { resolveVenue, fetchMenu } from '@/lib/venueMenu'
@@ -24,12 +24,7 @@ export default async function VenueMenuPage({
   return (
     <div style={{ minHeight: '100vh', padding: '2rem 1.5rem' }}>
       <div style={{ width: '100%', maxWidth: 640, margin: '0 auto' }}>
-        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <Logo compact={false} />
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 700, marginTop: '1rem' }}>
-            {venue.name}
-          </h1>
-        </div>
+        <VenueHeader venue={venue} />
 
         <CategoryQuickNav orderedCourseCats={orderedCourseCats} />
 
@@ -41,10 +36,6 @@ export default async function VenueMenuPage({
           optionsByGroup={optionsByGroup}
           currency={venue.currency}
         />
-
-        <p style={{ textAlign: 'center', marginTop: '1.5rem', color: 'var(--text-3)', fontSize: '0.8125rem' }}>
-          powered by metiflow
-        </p>
       </div>
     </div>
   )

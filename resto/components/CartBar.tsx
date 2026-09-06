@@ -11,39 +11,29 @@ export function CartBar({ currency }: { currency: string }) {
 
   const count = cart.reduce((n, i) => n + i.quantity, 0)
   const total = cart.reduce((n, i) => n + i.quantity * i.price, 0)
+  const hasPlacedOrder = !!placedOrder && placedOrder.items.length > 0
 
   return (
     <>
-      {/* Persistent recap of everything already sent to the kitchen for this
-          table, across every "place order" tap so far — not just the last
-          one. Reads the real order, so it stays accurate even after a page
-          refresh or coming back later, unlike a one-off confirmation toast. */}
-      {placedOrder && placedOrder.items.length > 0 && (
-        <div className="card" style={{ marginTop: '1.5rem', padding: '0.875rem 1rem' }}>
-          <button
-            onClick={() => setPlacedExpanded((v) => !v)}
-            style={{
-              width: '100%',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              padding: 0,
-              font: 'inherit',
-              color: 'inherit',
-            }}
-          >
-            <span style={{ fontWeight: 600, fontSize: '0.9375rem' }}>
-              ✓ Sent to the kitchen · {formatPrice(placedOrder.total, currency)}
-            </span>
-            <span style={{ fontSize: '0.75rem', color: 'var(--text-2)' }}>
-              {placedExpanded ? 'Hide' : 'View'}
-            </span>
-          </button>
-          {placedExpanded && (
-            <div style={{ marginTop: '0.75rem' }}>
+      {/* Both buttons below are sticky so that once anything has been sent
+          to the kitchen, checking the bill never requires scrolling back
+          down through the whole menu to find it — it stays reachable from
+          wherever the customer is on the page, the same way the active
+          cart's "View bill" button already did. */}
+      {(hasPlacedOrder || count > 0) && (
+        <div
+          style={{
+            position: 'sticky',
+            bottom: '1rem',
+            marginTop: '1.5rem',
+            zIndex: 10,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.5rem',
+          }}
+        >
+          {hasPlacedOrder && placedExpanded && (
+            <div className="card" style={{ padding: '0.875rem 1rem' }}>
               {placedOrder.items.map((item, i) => (
                 <div
                   key={i}
@@ -70,27 +60,45 @@ export function CartBar({ currency }: { currency: string }) {
                   </div>
                 </div>
               ))}
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-2)', marginTop: '0.5rem' }}>
+                Add more items any time to send another round.
+              </div>
             </div>
           )}
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-2)', marginTop: '0.5rem' }}>
-            Add more items any time to send another round.
-          </div>
-        </div>
-      )}
 
-      {count > 0 && (
-        <div
-          style={{
-            position: 'sticky',
-            bottom: '1rem',
-            marginTop: '1.5rem',
-            zIndex: 10,
-          }}
-        >
-          {expanded && (
+          {/* Persistent recap of everything already sent to the kitchen for
+              this table, across every "place order" tap so far — not just
+              the last one. Reads the real order, so it stays accurate even
+              after a page refresh or coming back later, unlike a one-off
+              confirmation toast. Styled as a secondary (not btn-primary)
+              shortcut so it doesn't compete with "Place order" below when
+              both are showing at once. */}
+          {hasPlacedOrder && (
+            <button
+              onClick={() => setPlacedExpanded((v) => !v)}
+              className="card"
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '0.75rem 1rem',
+                cursor: 'pointer',
+                font: 'inherit',
+                color: 'inherit',
+                boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
+              }}
+            >
+              <span style={{ fontWeight: 600, fontSize: '0.9375rem' }}>
+                ✓ Sent to the kitchen · {placedExpanded ? 'Hide' : 'View bill'}
+              </span>
+              <span style={{ fontWeight: 600 }}>{formatPrice(placedOrder.total, currency)}</span>
+            </button>
+          )}
+
+          {expanded && count > 0 && (
             <div
               className="card"
-              style={{ marginBottom: '0.75rem', padding: '0.5rem 1rem' }}
+              style={{ padding: '0.5rem 1rem' }}
             >
               {cart.map((item, i) => (
                 <div
@@ -157,14 +165,16 @@ export function CartBar({ currency }: { currency: string }) {
             </div>
           )}
 
-          <button
-            onClick={() => setExpanded((v) => !v)}
-            className="btn-primary"
-            style={{ justifyContent: 'space-between', boxShadow: '0 4px 16px rgba(0,0,0,0.15)' }}
-          >
-            <span>{expanded ? 'Hide bill' : `${count} item${count === 1 ? '' : 's'} · View bill`}</span>
-            <span>{formatPrice(total, currency)}</span>
-          </button>
+          {count > 0 && (
+            <button
+              onClick={() => setExpanded((v) => !v)}
+              className="btn-primary"
+              style={{ justifyContent: 'space-between', boxShadow: '0 4px 16px rgba(0,0,0,0.15)' }}
+            >
+              <span>{expanded ? 'Hide' : `${count} item${count === 1 ? '' : 's'} · New round`}</span>
+              <span>{formatPrice(total, currency)}</span>
+            </button>
+          )}
         </div>
       )}
     </>

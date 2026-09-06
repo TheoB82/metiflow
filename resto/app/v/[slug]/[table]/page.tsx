@@ -1,4 +1,4 @@
-import { Logo } from '@/components/Logo'
+import { VenueHeader } from '@/components/VenueHeader'
 import { MenuList } from '@/components/MenuList'
 import { CallWaiterButton } from '@/components/CallWaiterButton'
 import { CategoryQuickNav } from '@/components/CategoryQuickNav'
@@ -37,15 +37,7 @@ export default async function VenueTablePage({
   const page = (
     <div style={{ minHeight: '100vh', padding: '2rem 1.5rem' }}>
       <div style={{ width: '100%', maxWidth: 640, margin: '0 auto' }}>
-        <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-          <Logo compact={false} />
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 700, marginTop: '1rem' }}>
-            {venue.name}
-          </h1>
-          <p style={{ color: 'var(--text-2)', fontSize: '0.875rem', marginTop: '0.25rem' }}>
-            Table {tableLabel}
-          </p>
-        </div>
+        <VenueHeader venue={venue} tableLabel={tableLabel} />
 
         <div style={{ marginBottom: '2rem' }}>
           <CallWaiterButton
@@ -69,10 +61,6 @@ export default async function VenueTablePage({
         />
 
         {ordering && <CartBar currency={venue.currency} />}
-
-        <p style={{ textAlign: 'center', marginTop: '1.5rem', color: 'var(--text-3)', fontSize: '0.8125rem' }}>
-          powered by metiflow
-        </p>
       </div>
     </div>
   )

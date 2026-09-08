@@ -4,10 +4,12 @@ import { CallWaiterButton } from '@/components/CallWaiterButton'
 import { CategoryQuickNav } from '@/components/CategoryQuickNav'
 import { CartProvider } from '@/components/CartProvider'
 import { CartBar } from '@/components/CartBar'
+import { TablePinGate } from '@/components/TablePinGate'
 import { resolveVenue, fetchMenu } from '@/lib/venueMenu'
 import { getCart, getPlacedOrder } from '@/lib/cart'
+import { getPinStatus } from '@/lib/tablePin'
 import { notFound } from 'next/navigation'
-import { callWaiterAction } from './actions'
+import { callWaiterAction, setTablePinAction, verifyTablePinAction } from './actions'
 
 // Public, unauthenticated per-table page (metiflow.com/v/<slug-or-id>/<table>)
 // — what a table's own printed QR code now opens directly, replacing the
@@ -31,8 +33,15 @@ export default async function VenueTablePage({
     await fetchMenu(venue.id)
   const venueId = venue.id
   const ordering = venue.enable_qr_ordering
-  const initialCart = ordering ? await getCart(venueId, tableLabel) : []
-  const initialPlacedOrder = ordering ? await getPlacedOrder(venueId, tableLabel) : null
+  // Only the ordering/bill side needs a PIN — a venue with QR ordering off
+  // exposes nothing on this page worth gating (menu + Call Waiter only).
+  const pinStatus = ordering
+    ? await getPinStatus(venueId, tableLabel)
+    : ({ state: 'verified' } as const)
+  const pinVerified = pinStatus.state === 'verified'
+  const initialCart = ordering && pinVerified ? await getCart(venueId, tableLabel) : []
+  const initialPlacedOrder =
+    ordering && pinVerified ? await getPlacedOrder(venueId, tableLabel) : null
 
   const page = (
     <div style={{ minHeight: '100vh', padding: '2rem 1.5rem' }}>
@@ -65,16 +74,30 @@ export default async function VenueTablePage({
     </div>
   )
 
-  return ordering ? (
-    <CartProvider
-      venueId={venueId}
-      table={tableLabel}
-      initialCart={initialCart}
-      initialPlacedOrder={initialPlacedOrder}
+  if (!ordering) return page
+
+  return (
+    <TablePinGate
+      initialStatus={pinStatus}
+      actions={{
+        setPin: async (pin: string) => {
+          'use server'
+          return setTablePinAction(venueId, tableLabel, pin)
+        },
+        verifyPin: async (pin: string) => {
+          'use server'
+          return verifyTablePinAction(venueId, tableLabel, pin)
+        },
+      }}
     >
-      {page}
-    </CartProvider>
-  ) : (
-    page
+      <CartProvider
+        venueId={venueId}
+        table={tableLabel}
+        initialCart={initialCart}
+        initialPlacedOrder={initialPlacedOrder}
+      >
+        {page}
+      </CartProvider>
+    </TablePinGate>
   )
 }

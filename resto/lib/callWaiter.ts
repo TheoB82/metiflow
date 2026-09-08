@@ -10,6 +10,22 @@ import { createAdminSupabase } from './supabase-server'
 // thing that worked in that same test. Confirmed end-to-end working
 // against a real device 2026-08-23.
 export async function broadcastCallWaiter(venueId: string, tableLabel: string) {
+  await broadcastAlert(venueId, 'call_waiter', { table: tableLabel })
+}
+
+// A QR-ordered drink round just got placed (see placeOrder in lib/cart.ts) —
+// vibrates + purple-pulses the table on every KitchenFlow device, since a
+// round placed straight from a customer's phone otherwise only showed up
+// silently on the bar's own KDS tab.
+export async function broadcastQrDrinkOrder(venueId: string, tableLabel: string) {
+  await broadcastAlert(venueId, 'qr_drink_order', { table: tableLabel })
+}
+
+async function broadcastAlert(
+  venueId: string,
+  event: string,
+  payload: Record<string, unknown>,
+) {
   const client = createAdminSupabase()
   const channel = client.channel(`kf-alerts-${venueId}`, {
     config: { private: true },
@@ -20,11 +36,7 @@ export async function broadcastCallWaiter(venueId: string, tableLabel: string) {
     const timeout = setTimeout(resolve, 8000)
     channel.subscribe(async (status) => {
       if (status === 'SUBSCRIBED') {
-        await channel.send({
-          type: 'broadcast',
-          event: 'call_waiter',
-          payload: { table: tableLabel },
-        })
+        await channel.send({ type: 'broadcast', event, payload })
         clearTimeout(timeout)
         resolve()
       }

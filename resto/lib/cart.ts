@@ -1,4 +1,5 @@
 import { createAdminSupabase } from './supabase-server'
+import { broadcastQrDrinkOrder } from './callWaiter'
 
 export type CartItem = {
   id: string
@@ -80,7 +81,7 @@ export type PlaceOrderResult =
 // label kept in customer_name so staff can find it — and so later rounds
 // from the same table can find the same standing order again (see
 // findActiveOrder below).
-async function resolveTable(
+export async function resolveTable(
   sb: ReturnType<typeof createAdminSupabase>,
   venueId: string,
   tableLabel: string,
@@ -191,6 +192,16 @@ export async function placeOrder(
   )
   if (itemsError) {
     return { ok: false, error: itemsError.message }
+  }
+
+  const hasDrink = items.some(
+    (item) => (menuItemById.get(item.menu_item_id)?.course_type ?? 'main') === 'drink',
+  )
+  if (hasDrink) {
+    // Best-effort — a failed alert shouldn't fail order placement, the
+    // order itself already synced fine via the normal orders/order_items
+    // rows above.
+    await broadcastQrDrinkOrder(venueId, tableLabel).catch(() => {})
   }
 
   await sb

@@ -1,10 +1,18 @@
 'use client'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase'
+import { GetTheApp } from '@/components/GetTheApp'
 import { OnboardingShell } from '@/components/OnboardingShell'
 import { t } from '@/lib/i18n'
 
 export default function HandoffPage() {
   const router = useRouter()
+  const [email, setEmail] = useState<string>()
+
+  useEffect(() => {
+    createClient().auth.getUser().then(({ data }) => setEmail(data.user?.email ?? undefined))
+  }, [])
 
   function finishNow() {
     sessionStorage.removeItem('onboarding_venue_id')
@@ -18,6 +26,8 @@ export default function HandoffPage() {
     <OnboardingShell step={3}>
       <h1 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.25rem' }}>{t('handoffTitle')}</h1>
       <p style={{ color: 'var(--text-2)', fontSize: '0.875rem', marginBottom: '1.5rem' }}>{t('handoffDesc')}</p>
+
+      <div style={{ marginBottom: '1.25rem' }}><GetTheApp email={email} /></div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
         <button

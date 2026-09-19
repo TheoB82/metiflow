@@ -16,7 +16,17 @@ const CURRENCIES = [
   { code: 'CAD', label: 'C$ CAD — Canadian Dollar' },
 ]
 
-type ExistingVenue = { id: string; name: string; enable_table_service: boolean; enable_takeaway: boolean }
+type ExistingVenue = {
+  id: string
+  name: string
+  enable_table_service: boolean
+  enable_takeaway: boolean
+  plan: string | null
+  license_expires_at: number | null
+  stripe_customer_id: string | null
+  stripe_subscription_id: string | null
+  subscription_status: string | null
+}
 
 export default function VenuePage() {
   const router = useRouter()
@@ -39,28 +49,49 @@ export default function VenuePage() {
   // Set when the register page already asked this — skips re-asking below.
   const [multiFromPrefill, setMultiFromPrefill] = useState<'single' | 'multiple' | null>(null)
 
+  // The register page records the email it just signed up. If the session in
+  // this browser belongs to a different account (a leftover login), creating
+  // a venue would silently attach it to that other account — so sign out and
+  // send them to log in as the right one instead.
+  async function signedInAsWrongUser(sb: ReturnType<typeof createClient>, email: string | undefined) {
+    const expected = sessionStorage.getItem('onboarding_email')
+    if (!expected || email?.toLowerCase() === expected.toLowerCase()) return false
+    await sb.auth.signOut()
+    sessionStorage.removeItem('onboarding_email')
+    router.push('/login')
+    return true
+  }
+
   useEffect(() => {
+    type Prefill = { name?: string; phone?: string; address?: string; currency?: string; multi?: string }
+    function applyPrefill(p: Prefill) {
+      if (p.name) setName(p.name)
+      if (p.phone) setPhone(p.phone)
+      if (p.address) setAddress(p.address)
+      if (p.currency) setCurrency(p.currency)
+      if (p.multi === 'single' || p.multi === 'multiple') {
+        setMultiFromPrefill(p.multi)
+        setMultiLocation(p.multi)
+      }
+    }
+    let hadLocalPrefill = false
     try {
       const raw = sessionStorage.getItem('onboarding_prefill')
-      if (raw) {
-        const p = JSON.parse(raw)
-        if (p.name) setName(p.name)
-        if (p.phone) setPhone(p.phone)
-        if (p.address) setAddress(p.address)
-        if (p.currency) setCurrency(p.currency)
-        if (p.multi === 'single' || p.multi === 'multiple') {
-          setMultiFromPrefill(p.multi)
-          setMultiLocation(p.multi)
-        }
-      }
+      if (raw) { applyPrefill(JSON.parse(raw)); hadLocalPrefill = true }
     } catch { /* ignore */ }
 
     async function loadExisting() {
       const sb = createClient()
       const { data: { user } } = await sb.auth.getUser()
       if (!user) { setCheckingVenues(false); return }
+      if (await signedInAsWrongUser(sb, user.email)) return
+      // Confirmation link opened in a fresh tab: sessionStorage is empty, but
+      // the details entered at sign-up were saved on the account itself.
+      if (!hadLocalPrefill && user.user_metadata?.onboarding_prefill) {
+        applyPrefill(user.user_metadata.onboarding_prefill)
+      }
       const { data } = await sb.from('venues')
-        .select('id, name, enable_table_service, enable_takeaway')
+        .select('id, name, enable_table_service, enable_takeaway, plan, license_expires_at, stripe_customer_id, stripe_subscription_id, subscription_status')
         .eq('owner_id', user.id)
         .order('created_at')
       setExistingVenues(data ?? [])
@@ -75,9 +106,23 @@ export default function VenuePage() {
     const sb = createClient()
     const { data: { user }, error: userErr } = await sb.auth.getUser()
     if (userErr || !user) { router.push('/login'); return }
+    if (await signedInAsWrongUser(sb, user.email)) return
 
     const venueId = uuidv4()
     const slug = await uniqueSlug(name)
+
+    // One Stripe subscription covers the whole account, not one per venue —
+    // a 2nd+ venue inherits the owner's current plan/billing state instead
+    // of starting its own independent trial.
+    const billingSource = existingVenues.find(v => v.stripe_subscription_id) ?? existingVenues[0]
+    const inheritedBilling = billingSource ? {
+      plan: billingSource.plan,
+      license_expires_at: billingSource.license_expires_at,
+      stripe_customer_id: billingSource.stripe_customer_id,
+      stripe_subscription_id: billingSource.stripe_subscription_id,
+      subscription_status: billingSource.subscription_status,
+    } : null
+
     const { error: insertErr } = await sb.from('venues').upsert({
       id: venueId,
       owner_id: user.id,
@@ -87,10 +132,14 @@ export default function VenuePage() {
       currency,
       slug,
       created_at: new Date().toISOString(),
+      ...inheritedBilling,
     })
     if (insertErr) { setError(insertErr.message); setLoading(false); return }
     sessionStorage.setItem('onboarding_venue_id', venueId)
+    sessionStorage.removeItem('onboarding_email')
     if (multiLocation) sessionStorage.setItem('onboarding_multi', multiLocation)
+    // Billing is already set above — the Plan step should skip itself.
+    if (inheritedBilling) sessionStorage.setItem('onboarding_inherited_billing', '1')
 
     if (copyFromId) {
       try {

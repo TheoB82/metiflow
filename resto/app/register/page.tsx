@@ -32,6 +32,21 @@ export default function RegisterPage() {
 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  // Set once sign-up succeeded but the email still needs confirming.
+  const [sentTo, setSentTo] = useState<string | null>(null)
+  const [resendState, setResendState] = useState<'idle' | 'sending' | 'sent'>('idle')
+
+  const redirectTo = () => `${window.location.origin}/api/auth/callback?next=/onboarding/venue`
+
+  async function resend() {
+    if (!sentTo) return
+    setResendState('sending')
+    const { error: resendErr } = await createClient().auth.resend({
+      type: 'signup', email: sentTo, options: { emailRedirectTo: redirectTo() },
+    })
+    if (resendErr) { setError(resendErr.message); setResendState('idle'); return }
+    setError(''); setResendState('sent')
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -42,13 +57,37 @@ export default function RegisterPage() {
 
     const sb = createClient()
 
-    // 1. Create auth user
+    // 0. Drop any session left over from a previous login in this browser.
+    // Otherwise a registration with a new email while still logged in as
+    // someone else leaves onboarding running as the OLD user, and the new
+    // venue gets attached to the wrong account.
+    await sb.auth.signOut()
+    sessionStorage.removeItem('onboarding_venue_id')
+
+    const prefill = {
+      name: businessName.trim(),
+      phone: phone.trim(),
+      address: address.trim(),
+      currency,
+      type: venueType,
+      multi: multiLocation,
+    }
+
+    // 1. Create auth user. The business details ride along on the user so
+    // they survive the round-trip through the confirmation email, which
+    // usually opens in a different tab where sessionStorage is empty.
     const { data: authData, error: authErr } = await sb.auth.signUp({
       email,
       password,
-      options: { emailRedirectTo: `${window.location.origin}/api/auth/callback?next=/onboarding/plan` },
+      options: { emailRedirectTo: redirectTo(), data: { onboarding_prefill: prefill } },
     })
     if (authErr) { setError(authErr.message); setLoading(false); return }
+    // Supabase returns a fake user with no identities for an already-registered email.
+    if (authData.user && authData.user.identities?.length === 0) {
+      setError('An account with this email already exists — log in instead.')
+      setLoading(false)
+      return
+    }
 
     const user = authData.user
     const session = authData.session
@@ -90,17 +129,36 @@ export default function RegisterPage() {
       return
     }
 
-    // 3. Email confirmation required — store prefill and let onboarding handle it
-    sessionStorage.setItem('onboarding_prefill', JSON.stringify({
-      name: businessName.trim(),
-      phone: phone.trim(),
-      address: address.trim(),
-      currency,
-      type: venueType,
-      multi: multiLocation,
-    }))
-    router.push('/onboarding/venue')
+    // 3. Email confirmation required — no session yet, so tell them to
+    // check their inbox instead of dropping them on a form that can't save.
+    sessionStorage.setItem('onboarding_prefill', JSON.stringify(prefill))
+    sessionStorage.setItem('onboarding_email', email)
+    setSentTo(email)
+    setLoading(false)
   }
+
+  if (sentTo) return (
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', background: 'var(--surface-2)' }}>
+      <div style={{ width: '100%', maxWidth: 520 }}>
+        <div style={{ textAlign: 'center', marginBottom: '2rem' }}><Logo /></div>
+        <div className="card" style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: 40, marginBottom: 8 }}>📧</div>
+          <h1 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.5rem' }}>Check your email</h1>
+          <p style={{ color: 'var(--text-2)', fontSize: '0.875rem', marginBottom: '1rem' }}>
+            We sent a confirmation link to <b>{sentTo}</b>. Click it to finish setting up your account
+            — you&rsquo;ll then be asked to confirm your venue details.
+          </p>
+          <p style={{ color: 'var(--text-3)', fontSize: '0.8125rem', marginBottom: '1.25rem' }}>
+            Nothing there after a minute? Check spam, or resend it. Only the newest link works.
+          </p>
+          {error && <div className="error-box" style={{ marginBottom: '1rem' }}>{error}</div>}
+          <button className="btn-outline" onClick={resend} disabled={resendState === 'sending'}>
+            {resendState === 'sending' ? 'Sending…' : resendState === 'sent' ? 'Sent — resend again' : 'Resend email'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', background: 'var(--surface-2)' }}>

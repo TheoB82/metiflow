@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { Logo } from '@/components/Logo'
+import { GetTheApp } from '@/components/GetTheApp'
 
 type Venue = {
   id: string
@@ -32,6 +33,15 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
   const [userEmail, setUserEmail] = useState('')
   const [showMultiHint, setShowMultiHint] = useState(false)
+  const [showApp, setShowApp] = useState(true)
+
+  useEffect(() => {
+    try { if (localStorage.getItem('dismiss_get_the_app') === '1') setShowApp(false) } catch { /* ignore */ }
+  }, [])
+  function dismissApp() {
+    setShowApp(false)
+    try { localStorage.setItem('dismiss_get_the_app', '1') } catch { /* ignore */ }
+  }
 
   useEffect(() => {
     // One-time nudge — set when the owner said "more than one location"
@@ -99,6 +109,15 @@ export default function DashboardPage() {
             </p>
             <button onClick={() => setShowMultiHint(false)} style={{
               background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)', fontSize: '1.125rem', lineHeight: 1,
+            }}>×</button>
+          </div>
+        )}
+        {showApp && (
+          <div style={{ position: 'relative', marginBottom: '1.5rem' }}>
+            <GetTheApp email={userEmail} />
+            <button onClick={dismissApp} aria-label="Dismiss" style={{
+              position: 'absolute', top: 8, right: 10, background: 'none', border: 'none',
+              cursor: 'pointer', color: 'var(--text-3)', fontSize: '1.125rem', lineHeight: 1,
             }}>×</button>
           </div>
         )}

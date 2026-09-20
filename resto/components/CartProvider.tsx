@@ -3,26 +3,35 @@
 import { createContext, useContext, useEffect, useRef, useState } from 'react'
 import type { CartItem, PlacedOrderItem } from '@/lib/cart'
 import {
-  getCartAction,
   addToCartAction,
   setQuantityAction,
   placeOrderAction,
   getPlacedOrderAction,
+  pollAction,
 } from '@/app/v/[slug]/[table]/actions'
 
-type PlacedOrder = { items: PlacedOrderItem[]; total: number } | null
+type PlacedOrder = {
+  items: PlacedOrderItem[]
+  total: number
+  // Rounds sent but not yet approved by staff (venues that require approval).
+  pendingItems: PlacedOrderItem[]
+  pendingTotal: number
+} | null
 
 type CartContextValue = {
   cart: CartItem[]
   placedOrder: PlacedOrder
   addItem: (
     item: { id: string; name: string; price: number },
-    opts?: { modifierNotes?: string; quantity?: number },
+    opts?: { modifierNotes?: string; quantity?: number; optionIds?: string[] },
   ) => void
   updateQuantity: (cartItemId: string, quantity: number) => void
   placeOrder: () => Promise<void>
   placing: boolean
   placeOrderError: string | null
+  // Set when staff declined a round; its items are back in the basket.
+  declinedNotice: boolean
+  dismissDeclinedNotice: () => void
 }
 
 const CartContext = createContext<CartContextValue | null>(null)
@@ -53,24 +62,23 @@ export function CartProvider({
   const [placedOrder, setPlacedOrder] = useState<PlacedOrder>(initialPlacedOrder)
   const [placing, setPlacing] = useState(false)
   const [placeOrderError, setPlaceOrderError] = useState<string | null>(null)
+  const [declinedNotice, setDeclinedNotice] = useState(false)
   const pending = useRef(false)
 
   useEffect(() => {
     const id = setInterval(async () => {
       if (pending.current) return
-      const [freshCart, freshPlaced] = await Promise.all([
-        getCartAction(venueId, table),
-        getPlacedOrderAction(venueId, table),
-      ])
+      const { cart: freshCart, placed: freshPlaced, restored } = await pollAction(venueId, table)
       setCart(freshCart)
       setPlacedOrder(freshPlaced)
+      if (restored > 0) setDeclinedNotice(true)
     }, 3000)
     return () => clearInterval(id)
   }, [venueId, table])
 
   async function addItem(
     item: { id: string; name: string; price: number },
-    opts?: { modifierNotes?: string; quantity?: number },
+    opts?: { modifierNotes?: string; quantity?: number; optionIds?: string[] },
   ) {
     pending.current = true
     const fresh = await addToCartAction(venueId, table, item, opts)
@@ -100,7 +108,17 @@ export function CartProvider({
 
   return (
     <CartContext.Provider
-      value={{ cart, placedOrder, addItem, updateQuantity, placeOrder, placing, placeOrderError }}
+      value={{
+        cart,
+        placedOrder,
+        addItem,
+        updateQuantity,
+        placeOrder,
+        placing,
+        placeOrderError,
+        declinedNotice,
+        dismissDeclinedNotice: () => setDeclinedNotice(false),
+      }}
     >
       {children}
     </CartContext.Provider>

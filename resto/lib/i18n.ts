@@ -57,6 +57,8 @@ export const strings: { en: Dict; el: Partial<Dict>; de: Partial<Dict> } = {
     publicPageDesc: 'Customers see your menu here when they scan a table QR code, and can call a waiter — turn on ordering below if you also want them to add items and build a running bill.',
     enableOrdering: 'Allow online ordering',
     enableOrderingDesc: 'Customers can add items to a shared bill from the table page. Call Waiter works either way.',
+    requireApproval: 'Staff approve orders first',
+    requireApprovalDesc: 'Each online order waits for a staff member to approve it before it reaches the kitchen or bar. Customers see it as pending until then.',
   },
   el: {
     // TODO(i18n): Greek strings — see lib/i18n.ts header for the fallback contract.

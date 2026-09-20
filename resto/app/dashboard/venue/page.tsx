@@ -24,6 +24,7 @@ function VenueEditForm() {
   const [hours, setHours] = useState<Hours>(defaultHours())
   const [slug, setSlug] = useState('')
   const [qrOrdering, setQrOrdering] = useState(false)
+  const [qrApproval, setQrApproval] = useState(false)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -49,6 +50,7 @@ function VenueEditForm() {
       }
       setSlug(data.slug ?? '')
       setQrOrdering(data.enable_qr_ordering ?? false)
+      setQrApproval(data.qr_require_approval ?? false)
       setLoading(false)
     }
     load()
@@ -74,6 +76,7 @@ function VenueEditForm() {
       opening_hours: encodeHours(hours),
       slug: finalSlug || null,
       enable_qr_ordering: qrOrdering,
+      qr_require_approval: qrApproval,
     }).eq('id', venueId!)
     if (err) { setError(err.message); setSaving(false); return }
 
@@ -200,6 +203,21 @@ function VenueEditForm() {
             <div style={{ fontSize: '0.8125rem', color: 'var(--text-2)' }}>{t('enableOrderingDesc')}</div>
           </div>
         </label>
+        {qrOrdering && (
+          <label style={{
+            display: 'flex', alignItems: 'center', gap: '1rem', padding: '0.75rem 1rem', marginTop: '0.75rem',
+            border: `1.5px solid ${qrApproval ? 'var(--brand)' : 'var(--border)'}`,
+            background: qrApproval ? 'var(--brand-light)' : 'var(--surface)',
+            borderRadius: 8, cursor: 'pointer', transition: 'all 0.15s',
+          }}>
+            <input type="checkbox" checked={qrApproval} onChange={e => setQrApproval(e.target.checked)}
+              style={{ accentColor: 'var(--brand)', width: 16, height: 16, flexShrink: 0 }} />
+            <div>
+              <div style={{ fontWeight: 600, fontSize: '0.9375rem' }}>{t('requireApproval')}</div>
+              <div style={{ fontSize: '0.8125rem', color: 'var(--text-2)' }}>{t('requireApprovalDesc')}</div>
+            </div>
+          </label>
+        )}
       </section>
 
       <div style={{ display: 'flex', gap: '0.75rem', paddingTop: '0.5rem', borderTop: '1px solid var(--border)' }}>

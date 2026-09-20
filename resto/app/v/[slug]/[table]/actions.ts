@@ -7,6 +7,7 @@ import {
   setQuantity,
   placeOrder,
   getPlacedOrder,
+  restoreDeclined,
   type PlaceOrderResult,
 } from '@/lib/cart'
 import {
@@ -48,7 +49,7 @@ export async function addToCartAction(
   venueId: string,
   table: string,
   item: { id: string; name: string; price: number },
-  opts?: { modifierNotes?: string; quantity?: number },
+  opts?: { modifierNotes?: string; quantity?: number; optionIds?: string[] },
 ) {
   await assertTableVerified(venueId, table)
   await addToCart(venueId, table, item, opts)
@@ -72,6 +73,18 @@ export async function placeOrderAction(
 ): Promise<PlaceOrderResult> {
   await assertTableVerified(venueId, table)
   return placeOrder(venueId, table)
+}
+
+// One round-trip for the 3s poll: first return any declined round's items to
+// the basket (reporting how many, so the page can say so), then read both.
+export async function pollAction(venueId: string, table: string) {
+  await assertTableVerified(venueId, table)
+  const restored = await restoreDeclined(venueId, table)
+  const [cart, placed] = await Promise.all([
+    getCart(venueId, table),
+    getPlacedOrder(venueId, table),
+  ])
+  return { cart, placed, restored }
 }
 
 export async function getPlacedOrderAction(venueId: string, table: string) {

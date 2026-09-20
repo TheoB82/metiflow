@@ -49,10 +49,11 @@ export type Venue = {
   name: string
   currency: string
   enable_qr_ordering: boolean
+  qr_require_approval: boolean
   logo_url: string | null
 }
 
-const VENUE_COLUMNS = 'id, name, currency, enable_qr_ordering, logo_url'
+const VENUE_COLUMNS = 'id, name, currency, enable_qr_ordering, qr_require_approval, logo_url'
 
 // Table QR codes are printed with the venue's raw id (always stable, no
 // dependency on the owner having set a friendly slug yet); a shared/

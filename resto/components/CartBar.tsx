@@ -5,13 +5,25 @@ import { useCart } from './CartProvider'
 import { formatPrice } from '@/lib/format'
 
 export function CartBar({ currency }: { currency: string }) {
-  const { cart, placedOrder, updateQuantity, placeOrder, placing, placeOrderError } = useCart()
+  const {
+    cart,
+    placedOrder,
+    updateQuantity,
+    placeOrder,
+    placing,
+    placeOrderError,
+    declinedNotice,
+    dismissDeclinedNotice,
+  } = useCart()
   const [expanded, setExpanded] = useState(false)
   const [placedExpanded, setPlacedExpanded] = useState(false)
+  const [pendingExpanded, setPendingExpanded] = useState(false)
 
   const count = cart.reduce((n, i) => n + i.quantity, 0)
   const total = cart.reduce((n, i) => n + i.quantity * i.price, 0)
   const hasPlacedOrder = !!placedOrder && placedOrder.items.length > 0
+  const pendingItems = placedOrder?.pendingItems ?? []
+  const hasPending = pendingItems.length > 0
 
   return (
     <>
@@ -20,7 +32,7 @@ export function CartBar({ currency }: { currency: string }) {
           down through the whole menu to find it — it stays reachable from
           wherever the customer is on the page, the same way the active
           cart's "View bill" button already did. */}
-      {(hasPlacedOrder || count > 0) && (
+      {(hasPlacedOrder || hasPending || declinedNotice || count > 0) && (
         <div
           style={{
             position: 'sticky',
@@ -32,8 +44,76 @@ export function CartBar({ currency }: { currency: string }) {
             gap: '0.5rem',
           }}
         >
+          {declinedNotice && (
+            <div
+              className="card"
+              style={{
+                padding: '0.75rem 1rem',
+                background: '#fef2f2',
+                border: '1.5px solid #b91c1c',
+                boxShadow: '0 6px 20px rgba(0,0,0,0.18)',
+              }}
+            >
+              <div style={{ fontWeight: 600, fontSize: '0.9375rem', color: '#991b1b' }}>
+                Your order wasn&apos;t accepted
+              </div>
+              <div style={{ fontSize: '0.8125rem', color: '#7f1d1d', marginTop: '0.25rem' }}>
+                Please check with a member of staff. Your items are back in your basket so you can change them and send again.
+              </div>
+              <button
+                onClick={dismissDeclinedNotice}
+                className="btn-outline"
+                style={{ marginTop: '0.5rem', padding: '0.375rem 0.75rem', fontSize: '0.8125rem' }}
+              >
+                OK
+              </button>
+            </div>
+          )}
+
+          {/* Rounds sent from this table that staff haven't approved yet —
+              shown as pending (not on the bill, not in the kitchen) until a
+              staff device approves, at which point they move into the
+              "Sent to the kitchen" bill below on the next refresh. */}
+          {hasPending && (
+            <button
+              onClick={() => setPendingExpanded((v) => !v)}
+              className="card"
+              style={{
+                ...panelTint,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.5rem',
+                padding: '0.75rem 1rem',
+                cursor: 'pointer',
+                font: 'inherit',
+                color: 'inherit',
+                textAlign: 'left',
+              }}
+            >
+              <span style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+                <span style={{ fontWeight: 600, fontSize: '0.9375rem' }}>
+                  ⏳ Waiting for staff to confirm · {pendingExpanded ? 'Hide' : 'View'}
+                </span>
+                <span style={{ fontWeight: 600 }}>{formatPrice(placedOrder?.pendingTotal ?? 0, currency)}</span>
+              </span>
+              {pendingExpanded &&
+                pendingItems.map((item, i) => (
+                  <span
+                    key={i}
+                    style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem', width: '100%' }}
+                  >
+                    <span>
+                      {item.quantity}× {item.name}
+                      {item.modifier_notes ? ` — ${item.modifier_notes}` : ''}
+                    </span>
+                    <span>{formatPrice(item.unit_price * item.quantity, currency)}</span>
+                  </span>
+                ))}
+            </button>
+          )}
+
           {hasPlacedOrder && placedExpanded && (
-            <div className="card" style={{ padding: '0.875rem 1rem' }}>
+            <div className="card" style={{ ...panelTint, padding: '0.875rem 1rem' }}>
               {placedOrder.items.map((item, i) => (
                 <div
                   key={i}
@@ -78,6 +158,7 @@ export function CartBar({ currency }: { currency: string }) {
               onClick={() => setPlacedExpanded((v) => !v)}
               className="card"
               style={{
+                ...panelTint,
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
@@ -85,7 +166,6 @@ export function CartBar({ currency }: { currency: string }) {
                 cursor: 'pointer',
                 font: 'inherit',
                 color: 'inherit',
-                boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
               }}
             >
               <span style={{ fontWeight: 600, fontSize: '0.9375rem' }}>
@@ -98,7 +178,7 @@ export function CartBar({ currency }: { currency: string }) {
           {expanded && count > 0 && (
             <div
               className="card"
-              style={{ padding: '0.5rem 1rem' }}
+              style={{ ...panelTint, padding: '0.5rem 1rem' }}
             >
               {cart.map((item, i) => (
                 <div
@@ -179,6 +259,15 @@ export function CartBar({ currency }: { currency: string }) {
       )}
     </>
   )
+}
+
+// The basket / bill panels float over the menu, whose items are white cards
+// on a near-white page — a warm tint, brand border and stronger shadow keep
+// the order panels visually distinct from the menu behind them.
+const panelTint: React.CSSProperties = {
+  background: 'var(--brand-light)',
+  border: '1.5px solid var(--brand)',
+  boxShadow: '0 6px 20px rgba(0,0,0,0.18)',
 }
 
 const quantityBtnStyle: React.CSSProperties = {

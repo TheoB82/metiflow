@@ -219,7 +219,18 @@ export function ModifierPicker({
           onClick={() => {
             addItem(
               { id: item.id, name: item.name, price: unitPrice },
-              { modifierNotes: notes || undefined, quantity },
+              {
+                modifierNotes: notes || undefined,
+                quantity,
+                // Ids of the chosen options, so the venue's stock can be
+                // deducted for modifier extras when staff approve the order.
+                optionIds: groups.flatMap((g) => {
+                  const qtyMap = selected[g.id] ?? {}
+                  return (optionsByGroupId[g.id] ?? [])
+                    .filter((o) => (qtyMap[o.id] ?? 0) > 0)
+                    .map((o) => o.id)
+                }),
+              },
             )
             onClose()
           }}

@@ -12,6 +12,7 @@ export function CartBar({ currency }: { currency: string }) {
     placeOrder,
     placing,
     placeOrderError,
+    actionError,
     declinedNotice,
     dismissDeclinedNotice,
   } = useCart()
@@ -32,7 +33,7 @@ export function CartBar({ currency }: { currency: string }) {
           down through the whole menu to find it — it stays reachable from
           wherever the customer is on the page, the same way the active
           cart's "View bill" button already did. */}
-      {(hasPlacedOrder || hasPending || declinedNotice || count > 0) && (
+      {(hasPlacedOrder || hasPending || declinedNotice || actionError || count > 0) && (
         <div
           style={{
             position: 'sticky',
@@ -44,6 +45,32 @@ export function CartBar({ currency }: { currency: string }) {
             gap: '0.5rem',
           }}
         >
+          {actionError && (
+            <div
+              className="card"
+              style={{
+                padding: '0.75rem 1rem',
+                background: '#fffbeb',
+                border: '1.5px solid #b45309',
+                boxShadow: '0 6px 20px rgba(0,0,0,0.18)',
+              }}
+            >
+              <div style={{ fontWeight: 600, fontSize: '0.9375rem', color: '#92400e' }}>
+                That didn&apos;t go through
+              </div>
+              <div style={{ fontSize: '0.8125rem', color: '#78350f', marginTop: '0.25rem' }}>
+                This page may be out of date. Refresh it and try again — your table&apos;s basket is kept.
+              </div>
+              <button
+                onClick={() => window.location.reload()}
+                className="btn-primary"
+                style={{ marginTop: '0.5rem', padding: '0.5rem 0.75rem', fontSize: '0.8125rem' }}
+              >
+                Refresh
+              </button>
+            </div>
+          )}
+
           {declinedNotice && (
             <div
               className="card"

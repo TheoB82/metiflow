@@ -29,6 +29,9 @@ type CartContextValue = {
   placeOrder: () => Promise<void>
   placing: boolean
   placeOrderError: string | null
+  // Set when a basket action failed (stale page after an update, expired PIN,
+  // network) — shown with a refresh button instead of failing silently.
+  actionError: boolean
   // Set when staff declined a round; its items are back in the basket.
   declinedNotice: boolean
   dismissDeclinedNotice: () => void
@@ -63,15 +66,27 @@ export function CartProvider({
   const [placing, setPlacing] = useState(false)
   const [placeOrderError, setPlaceOrderError] = useState<string | null>(null)
   const [declinedNotice, setDeclinedNotice] = useState(false)
+  const [actionError, setActionError] = useState(false)
   const pending = useRef(false)
+  const pollFailures = useRef(0)
 
   useEffect(() => {
     const id = setInterval(async () => {
       if (pending.current) return
-      const { cart: freshCart, placed: freshPlaced, restored } = await pollAction(venueId, table)
-      setCart(freshCart)
-      setPlacedOrder(freshPlaced)
-      if (restored > 0) setDeclinedNotice(true)
+      try {
+        const { cart: freshCart, placed: freshPlaced, restored } = await pollAction(venueId, table)
+        setCart(freshCart)
+        setPlacedOrder(freshPlaced)
+        if (restored > 0) setDeclinedNotice(true)
+        pollFailures.current = 0
+      } catch {
+        // One dropped request on a flaky connection is normal; two in a row
+        // means the page is stale (e.g. the site was updated) or the session
+        // expired — say so instead of leaving a basket that quietly stops
+        // updating.
+        pollFailures.current += 1
+        if (pollFailures.current >= 2) setActionError(true)
+      }
     }, 3000)
     return () => clearInterval(id)
   }, [venueId, table])
@@ -81,28 +96,46 @@ export function CartProvider({
     opts?: { modifierNotes?: string; quantity?: number; optionIds?: string[] },
   ) {
     pending.current = true
-    const fresh = await addToCartAction(venueId, table, item, opts)
-    setCart(fresh)
-    pending.current = false
+    try {
+      const fresh = await addToCartAction(venueId, table, item, opts)
+      setCart(fresh)
+      setActionError(false)
+    } catch {
+      setActionError(true)
+    } finally {
+      pending.current = false
+    }
   }
 
   async function updateQuantity(cartItemId: string, quantity: number) {
     pending.current = true
-    const fresh = await setQuantityAction(venueId, table, cartItemId, quantity)
-    setCart(fresh)
-    pending.current = false
+    try {
+      const fresh = await setQuantityAction(venueId, table, cartItemId, quantity)
+      setCart(fresh)
+      setActionError(false)
+    } catch {
+      setActionError(true)
+    } finally {
+      pending.current = false
+    }
   }
 
   async function placeOrder() {
     setPlacing(true)
     setPlaceOrderError(null)
-    const result = await placeOrderAction(venueId, table)
-    setPlacing(false)
-    if (result.ok) {
-      setCart([])
-      setPlacedOrder(await getPlacedOrderAction(venueId, table))
-    } else {
-      setPlaceOrderError(result.error)
+    try {
+      const result = await placeOrderAction(venueId, table)
+      if (result.ok) {
+        setCart([])
+        setPlacedOrder(await getPlacedOrderAction(venueId, table))
+        setActionError(false)
+      } else {
+        setPlaceOrderError(result.error)
+      }
+    } catch {
+      setActionError(true)
+    } finally {
+      setPlacing(false)
     }
   }
 
@@ -116,6 +149,7 @@ export function CartProvider({
         placeOrder,
         placing,
         placeOrderError,
+        actionError,
         declinedNotice,
         dismissDeclinedNotice: () => setDeclinedNotice(false),
       }}

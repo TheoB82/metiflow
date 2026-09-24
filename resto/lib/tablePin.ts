@@ -28,8 +28,10 @@ function cookieName(venueId: string, tableLabel: string): string {
 // from a previous seating can't accidentally validate against a new PIN
 // that happens to reuse the same 4 digits.
 function sign(payload: string): string {
-  const secret = process.env.SUPABASE_SERVICE_ROLE_KEY
-  if (!secret) throw new Error('SUPABASE_SERVICE_ROLE_KEY not set')
+  // Dedicated HMAC secret — this used to reuse the Supabase service-role
+  // key, which tied cookie signing to an API credential being rotated.
+  const secret = process.env.TABLE_PIN_COOKIE_SECRET
+  if (!secret) throw new Error('TABLE_PIN_COOKIE_SECRET not set')
   return createHmac('sha256', secret).update(payload).digest('hex')
 }
 

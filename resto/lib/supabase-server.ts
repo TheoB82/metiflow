@@ -23,10 +23,15 @@ export async function createServerSupabase() {
 
 // Service-role client that bypasses RLS — only for trusted server contexts
 // with no user session (e.g. the Stripe webhook). Never expose to the client.
+// SUPABASE_SECRET_KEY is the new-style sb_secret_… key; the legacy
+// SUPABASE_SERVICE_ROLE_KEY fallback only exists until that env var is set
+// everywhere — the legacy JWT keys are being disabled (leaked 2026-09-24).
 export function createAdminSupabase() {
+  const key = process.env.SUPABASE_SECRET_KEY ?? process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!key) throw new Error('SUPABASE_SECRET_KEY not set')
   return createSupabaseClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    key,
     { auth: { autoRefreshToken: false, persistSession: false } },
   )
 }

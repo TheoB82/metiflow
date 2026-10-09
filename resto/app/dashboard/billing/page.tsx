@@ -5,12 +5,13 @@ import { createClient } from '@/lib/supabase'
 import { Logo } from '@/components/Logo'
 import { ALL_PLANS, planById, type PlanId } from '@/lib/plans'
 
-type VenueBilling = {
-  id: string
-  name: string
+type Venue = { id: string; name: string }
+
+type AccountBilling = {
   plan: string
   license_expires_at: number | null
   subscription_status: string | null
+  venues: Venue[]
 }
 
 function daysLeft(expiresAtMs: number | null): number | null {
@@ -21,11 +22,10 @@ function daysLeft(expiresAtMs: number | null): number | null {
 function BillingForm() {
   const router = useRouter()
   const params = useSearchParams()
-  const venueId = params.get('id')
   const success = params.get('success') === '1'
   const canceled = params.get('canceled') === '1'
 
-  const [venue, setVenue] = useState<VenueBilling | null>(null)
+  const [account, setAccount] = useState<AccountBilling | null>(null)
   const [loading, setLoading] = useState(true)
   const [checkingOut, setCheckingOut] = useState<PlanId | null>(null)
   const [error, setError] = useState('')
@@ -36,36 +36,47 @@ function BillingForm() {
       const { data: { user } } = await sb.auth.getUser()
       if (!user) { router.push('/login'); return }
 
-      let query = sb.from('venues').select('id, name, plan, license_expires_at, subscription_status').eq('owner_id', user.id)
-      query = venueId ? query.eq('id', venueId) : query.limit(1)
-      const { data } = await query.single()
-      if (!data) { router.push('/dashboard'); return }
-      setVenue(data)
+      // One Stripe subscription covers every venue this owner has — pull
+      // them all and use whichever carries the live subscription, if any,
+      // as the source of truth (they're kept in sync by the webhook).
+      const { data } = await sb.from('venues')
+        .select('id, name, plan, license_expires_at, subscription_status, stripe_subscription_id')
+        .eq('owner_id', user.id)
+        .order('created_at')
+      if (!data || data.length === 0) { router.push('/dashboard'); return }
+
+      const source = data.find(v => v.stripe_subscription_id) ?? data[0]
+      setAccount({
+        plan: source.plan,
+        license_expires_at: source.license_expires_at,
+        subscription_status: source.subscription_status,
+        venues: data.map(v => ({ id: v.id, name: v.name })),
+      })
       setLoading(false)
     }
     load()
-  }, [venueId, router])
+  }, [router])
 
   async function subscribe(plan: PlanId) {
-    if (!venue) return
+    if (!account) return
     setCheckingOut(plan); setError('')
     // The @supabase/ssr browser client keeps the session in cookies, which
     // the same-origin API route reads directly — no auth header needed.
     const res = await fetch('/api/billing/checkout', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ venueId: venue.id, plan }),
+      body: JSON.stringify({ plan }),
     })
     const data = await res.json()
     if (!res.ok) { setError(data.error ?? 'Could not start checkout'); setCheckingOut(null); return }
     window.location.href = data.url
   }
 
-  if (loading || !venue) return <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-3)' }}>Loading…</div>
+  if (loading || !account) return <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-3)' }}>Loading…</div>
 
-  const remaining = venue.plan === 'trial' ? daysLeft(venue.license_expires_at) : null
-  const currentPlan = planById(venue.plan)
-  const isActive = venue.subscription_status === 'active' || venue.subscription_status === 'trialing'
+  const remaining = account.plan === 'trial' ? daysLeft(account.license_expires_at) : null
+  const currentPlan = planById(account.plan)
+  const isActive = account.subscription_status === 'active' || account.subscription_status === 'trialing'
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -83,7 +94,7 @@ function BillingForm() {
 
       <section>
         <h2 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '0.5rem' }}>Current plan</h2>
-        {venue.plan === 'trial' ? (
+        {account.plan === 'trial' ? (
           <p style={{ fontSize: '0.875rem', color: 'var(--text-2)' }}>
             {remaining == null
               ? 'Free trial'
@@ -93,21 +104,31 @@ function BillingForm() {
           </p>
         ) : (
           <p style={{ fontSize: '0.875rem', color: 'var(--text-2)' }}>
-            {currentPlan?.name ?? venue.plan} {isActive ? '· active' : venue.subscription_status ? `· ${venue.subscription_status}` : ''}
+            {currentPlan?.name ?? account.plan} {isActive ? '· active' : account.subscription_status ? `· ${account.subscription_status}` : ''}
+          </p>
+        )}
+        {account.venues.length > 1 && (
+          <p style={{ fontSize: '0.8125rem', color: 'var(--text-3)', marginTop: 4 }}>
+            Covers {account.venues.length} venues: {account.venues.map(v => v.name).join(', ')}
           </p>
         )}
       </section>
 
       <section>
         <h2 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '0.75rem' }}>
-          {venue.plan === 'trial' ? 'Choose a plan to continue' : 'Change plan'}
+          {account.plan === 'trial' ? 'Choose a plan to continue' : 'Change plan'}
         </h2>
+        {account.venues.length > 1 && (
+          <p style={{ fontSize: '0.8125rem', color: 'var(--text-3)', marginBottom: '0.75rem' }}>
+            One subscription covers your whole account — with {account.venues.length - 1} extra venue{account.venues.length - 1 === 1 ? '' : 's'} added at £25/mo each.
+          </p>
+        )}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           {ALL_PLANS.map(plan => (
             <div key={plan.id} style={{
               display: 'flex', gap: '1rem', padding: '1rem', borderRadius: 10,
-              border: venue.plan === plan.id ? '2px solid var(--brand)' : '1.5px solid var(--border)',
-              background: venue.plan === plan.id ? 'var(--brand-light)' : 'var(--surface)',
+              border: account.plan === plan.id ? '2px solid var(--brand)' : '1.5px solid var(--border)',
+              background: account.plan === plan.id ? 'var(--brand-light)' : 'var(--surface)',
             }}>
               <div style={{ flex: 1 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
@@ -128,11 +149,11 @@ function BillingForm() {
               <button
                 type="button"
                 className="btn-primary"
-                disabled={checkingOut !== null || (venue.plan === plan.id && isActive)}
+                disabled={checkingOut !== null || (account.plan === plan.id && isActive)}
                 onClick={() => subscribe(plan.id)}
                 style={{ alignSelf: 'center', whiteSpace: 'nowrap' }}
               >
-                {venue.plan === plan.id && isActive
+                {account.plan === plan.id && isActive
                   ? 'Current plan'
                   : checkingOut === plan.id ? 'Redirecting…' : 'Subscribe'}
               </button>

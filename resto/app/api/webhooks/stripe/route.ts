@@ -26,9 +26,11 @@ export async function POST(request: Request) {
   switch (event.type) {
     case 'checkout.session.completed': {
       const session = event.data.object as Stripe.Checkout.Session
-      const venueId = session.metadata?.venue_id ?? session.client_reference_id
+      // One Stripe subscription covers an owner's whole account — apply the
+      // resulting plan/billing state to every venue they own, not just one.
+      const ownerId = session.metadata?.owner_id ?? session.client_reference_id
       const plan = session.metadata?.plan
-      if (!venueId || !session.subscription || typeof session.customer !== 'string') break
+      if (!ownerId || !session.subscription || typeof session.customer !== 'string') break
 
       const subscription = await getStripe().subscriptions.retrieve(session.subscription as string)
       await supabase.from('venues').update({
@@ -37,7 +39,7 @@ export async function POST(request: Request) {
         stripe_subscription_id: subscription.id,
         subscription_status: subscription.status,
         license_expires_at: periodEndMs(subscription),
-      }).eq('id', venueId)
+      }).eq('owner_id', ownerId)
       break
     }
 

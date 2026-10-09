@@ -12,11 +12,23 @@ export default function PlanPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
+  const [skipping, setSkipping] = useState(false)
+
   useEffect(() => {
+    // This venue already inherited the owner's existing plan/billing state
+    // (one Stripe subscription covers the whole account) — nothing to pick.
+    if (sessionStorage.getItem('onboarding_inherited_billing') === '1') {
+      sessionStorage.removeItem('onboarding_inherited_billing')
+      setSkipping(true)
+      router.replace('/onboarding/handoff')
+      return
+    }
     const t = sessionStorage.getItem('onboarding_type') ?? 'both'
     setVenueType(t)
     setSelected(t === 'takeaway' ? 'takeaway_online' : 'basic_online')
-  }, [])
+  }, [router])
+
+  if (skipping) return null
 
   const plans = venueType === 'takeaway' ? TAKEAWAY_PLANS : RESTAURANT_PLANS
 

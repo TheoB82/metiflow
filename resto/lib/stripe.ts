@@ -18,6 +18,9 @@ export const PLAN_PRICE_IDS: Record<string, string | undefined> = {
   takeaway_online: process.env.STRIPE_PRICE_TAKEAWAY_ONLINE,
   basic: process.env.STRIPE_PRICE_BASIC,
   basic_online: process.env.STRIPE_PRICE_BASIC_ONLINE,
+  // One Stripe subscription covers a whole owner account — each venue
+  // beyond the first is this add-on line item at quantity (venueCount - 1).
+  addon: process.env.STRIPE_PRICE_ADDON,
 }
 
 export function priceIdForPlan(plan: string): string | null {

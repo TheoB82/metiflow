@@ -28,7 +28,7 @@ export function AddToCartButton({
       setPickerOpen(true)
       return
     }
-    addItem(item)
+    addItem(item.id)
     setJustAdded(true)
     setTimeout(() => setJustAdded(false), 900)
   }

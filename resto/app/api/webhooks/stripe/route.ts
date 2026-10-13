@@ -31,13 +31,21 @@ export async function POST(request: Request) {
       if (!venueId || !session.subscription || typeof session.customer !== 'string') break
 
       const subscription = await getStripe().subscriptions.retrieve(session.subscription as string)
+      // One subscription covers the owner's whole account: every venue of
+      // theirs gets it, and a venue added later inherits it (database
+      // trigger venues_guard_licence, supabase_prelaunch_batch1.sql).
+      const { data: paidVenue } = await supabase
+        .from('venues').select('owner_id').eq('id', venueId).maybeSingle()
+      const account = paidVenue?.owner_id
+        ? { column: 'owner_id', value: paidVenue.owner_id as string }
+        : { column: 'id', value: venueId }
       await supabase.from('venues').update({
         plan: plan ?? planForPriceId(subscription.items.data[0]?.price.id ?? '') ?? 'basic_online',
         stripe_customer_id: session.customer,
         stripe_subscription_id: subscription.id,
         subscription_status: subscription.status,
         license_expires_at: periodEndMs(subscription),
-      }).eq('id', venueId)
+      }).eq(account.column, account.value)
       break
     }
 

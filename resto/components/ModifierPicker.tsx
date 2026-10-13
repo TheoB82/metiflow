@@ -68,19 +68,6 @@ export function ModifierPicker({
     )
   }, 0)
 
-  const notes = groups
-    .map((g) => {
-      const opts = optionsByGroupId[g.id] ?? []
-      const qty = selected[g.id] ?? {}
-      const names = opts
-        .filter((o) => (qty[o.id] ?? 0) > 0)
-        .map((o) => (qty[o.id]! > 1 ? `${o.name} x${qty[o.id]}` : o.name))
-        .join(', ')
-      return names ? `${g.name}: ${names}` : null
-    })
-    .filter(Boolean)
-    .join(' | ')
-
   const unitPrice = item.price + priceAdj
 
   return (
@@ -217,21 +204,17 @@ export function ModifierPicker({
 
         <button
           onClick={() => {
-            addItem(
-              { id: item.id, name: item.name, price: unitPrice },
-              {
-                modifierNotes: notes || undefined,
-                quantity,
-                // Ids of the chosen options, so the venue's stock can be
-                // deducted for modifier extras when staff approve the order.
-                optionIds: groups.flatMap((g) => {
-                  const qtyMap = selected[g.id] ?? {}
-                  return (optionsByGroupId[g.id] ?? [])
-                    .filter((o) => (qtyMap[o.id] ?? 0) > 0)
-                    .map((o) => o.id)
-                }),
-              },
-            )
+            // The server prices the line from the menu (lib/cart.ts
+            // priceLine); unitPrice above is for display only.
+            addItem(item.id, {
+              quantity,
+              options: groups.flatMap((g) => {
+                const qtyMap = selected[g.id] ?? {}
+                return (optionsByGroupId[g.id] ?? [])
+                  .filter((o) => (qtyMap[o.id] ?? 0) > 0)
+                  .map((o) => ({ id: o.id, qty: qtyMap[o.id]! }))
+              }),
+            })
             onClose()
           }}
           disabled={!isValid}

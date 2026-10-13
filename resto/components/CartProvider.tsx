@@ -1,7 +1,7 @@
 'use client'
 
 import { createContext, useContext, useEffect, useRef, useState } from 'react'
-import type { CartItem, PlacedOrderItem } from '@/lib/cart'
+import type { CartItem, CartOption, PlacedOrderItem } from '@/lib/cart'
 import {
   addToCartAction,
   setQuantityAction,
@@ -22,8 +22,8 @@ type CartContextValue = {
   cart: CartItem[]
   placedOrder: PlacedOrder
   addItem: (
-    item: { id: string; name: string; price: number },
-    opts?: { modifierNotes?: string; quantity?: number; optionIds?: string[] },
+    itemId: string,
+    opts?: { quantity?: number; options?: CartOption[] },
   ) => void
   updateQuantity: (cartItemId: string, quantity: number) => void
   placeOrder: () => Promise<void>
@@ -92,12 +92,12 @@ export function CartProvider({
   }, [venueId, table])
 
   async function addItem(
-    item: { id: string; name: string; price: number },
-    opts?: { modifierNotes?: string; quantity?: number; optionIds?: string[] },
+    itemId: string,
+    opts?: { quantity?: number; options?: CartOption[] },
   ) {
     pending.current = true
     try {
-      const fresh = await addToCartAction(venueId, table, item, opts)
+      const fresh = await addToCartAction(venueId, table, itemId, opts)
       setCart(fresh)
       setActionError(false)
     } catch {

@@ -19,6 +19,7 @@ export default function HandoffPage() {
     sessionStorage.removeItem('onboarding_type')
     sessionStorage.removeItem('onboarding_copy_from')
     sessionStorage.removeItem('onboarding_multi')
+    sessionStorage.removeItem('onboarding_plan')
     router.push('/dashboard')
   }
 

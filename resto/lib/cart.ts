@@ -24,38 +24,132 @@ export async function getCart(venueId: string, tableLabel: string): Promise<Cart
   return (data as CartItem[]) ?? []
 }
 
+export type CartOption = { id: string; qty: number }
+
+const MAX_LINE_QUANTITY = 50
+const MAX_OPTION_QUANTITY = 20
+
+function wholeNumber(n: unknown, min: number, max: number): number {
+  const v = Math.floor(Number(n))
+  if (!Number.isFinite(v)) return min
+  return Math.min(max, Math.max(min, v))
+}
+
+// Escapes ILIKE wildcards so a table label is matched literally — a label
+// of "%" otherwise matches every table.
+function literalPattern(text: string): string {
+  return text.replace(/[\\%_]/g, (c) => `\\${c}`)
+}
+
+// Whether the venue takes orders from its QR pages. The page hides the
+// basket when it's off, but the server actions are callable directly, so
+// each one checks too.
+export async function isQrOrderingOn(venueId: string): Promise<boolean> {
+  const sb = createAdminSupabase()
+  const { data } = await sb
+    .from('venues')
+    .select('enable_qr_ordering')
+    .eq('id', venueId)
+    .maybeSingle()
+  return data?.enable_qr_ordering === true
+}
+
+// A basket line priced from the venue's own menu. The browser says only
+// which item and options were picked, and how many: the name, unit price
+// and modifier notes are read here, so a guest can't set their own price.
+// Same arithmetic and notes format as ModifierPicker.
+async function priceLine(
+  sb: ReturnType<typeof createAdminSupabase>,
+  venueId: string,
+  itemId: string,
+  picked: CartOption[],
+) {
+  const { data: item } = await sb
+    .from('menu_items')
+    .select('id, name, price, is_active, is_available')
+    .eq('id', itemId)
+    .eq('venue_id', venueId)
+    .maybeSingle()
+  if (!item || item.is_active === false || item.is_available === false) {
+    throw new Error('ITEM_UNAVAILABLE')
+  }
+
+  const qtyById = new Map<string, number>()
+  for (const o of picked) {
+    if (typeof o?.id !== 'string') continue
+    qtyById.set(o.id, wholeNumber(o.qty, 1, MAX_OPTION_QUANTITY))
+  }
+  if (qtyById.size === 0) {
+    return { name: item.name as string, price: item.price as number, notes: null, optionIds: null }
+  }
+
+  const { data: groups } = await sb
+    .from('modifier_groups')
+    .select('id, name, allows_quantity, display_order')
+    .eq('menu_item_id', item.id)
+    .eq('venue_id', venueId)
+    .order('display_order')
+  const groupById = new Map((groups ?? []).map((g) => [g.id as string, g]))
+  const { data: options } = await sb
+    .from('modifier_options')
+    .select('id, group_id, name, price_adj_pence, is_available, display_order')
+    .in('id', [...qtyById.keys()])
+    .eq('venue_id', venueId)
+    .order('display_order')
+  const chosen = (options ?? []).filter((o) => groupById.has(o.group_id) && o.is_available !== false)
+  if (chosen.length !== qtyById.size) throw new Error('OPTION_UNAVAILABLE')
+
+  let price = item.price as number
+  const notes: string[] = []
+  for (const g of groups ?? []) {
+    const names = chosen
+      .filter((o) => o.group_id === g.id)
+      .map((o) => {
+        const q = g.allows_quantity ? qtyById.get(o.id)! : 1
+        price += (o.price_adj_pence as number) * q
+        return q > 1 ? `${o.name} x${q}` : (o.name as string)
+      })
+    if (names.length) notes.push(`${g.name}: ${names.join(', ')}`)
+  }
+  return {
+    name: item.name as string,
+    price,
+    notes: notes.join(' | ') || null,
+    optionIds: chosen.map((o) => o.id as string).join(','),
+  }
+}
+
 // A plain item (no modifiers) taps repeatedly onto the same line — merges by
-// incrementing quantity, same as before. A customized item (modifierNotes
+// incrementing quantity, same as before. A customized item (modifier notes
 // set) always gets its own line: two "Gyros" with different modifier
 // choices are different orders, and can't be merged into one quantity.
-// `price` here is already the effective per-unit price (base + any modifier
+// The stored price is the effective per-unit price (base + any modifier
 // price adjustments), matching how order_items.unit_price works everywhere
 // else in the system.
 export async function addToCart(
   venueId: string,
   tableLabel: string,
-  item: { id: string; name: string; price: number },
-  opts?: { modifierNotes?: string; quantity?: number; optionIds?: string[] },
+  itemId: string,
+  opts?: { quantity?: number; options?: CartOption[] },
 ) {
   const sb = createAdminSupabase()
-  const quantity = opts?.quantity ?? 1
-  const modifierNotes = opts?.modifierNotes ?? null
-  const selectedOptionIds = opts?.optionIds?.length ? opts.optionIds.join(',') : null
+  const quantity = wholeNumber(opts?.quantity ?? 1, 1, MAX_LINE_QUANTITY)
+  const line = await priceLine(sb, venueId, itemId, opts?.options ?? [])
 
-  if (!modifierNotes) {
+  if (!line.notes) {
     const { data: existing } = await sb
       .from('qr_cart_items')
       .select('id, quantity')
       .eq('venue_id', venueId)
       .eq('table_label', tableLabel)
-      .eq('menu_item_id', item.id)
+      .eq('menu_item_id', itemId)
       .is('modifier_notes', null)
       .maybeSingle()
 
     if (existing) {
       await sb
         .from('qr_cart_items')
-        .update({ quantity: existing.quantity + quantity })
+        .update({ quantity: Math.min(MAX_LINE_QUANTITY, existing.quantity + quantity) })
         .eq('id', existing.id)
       return
     }
@@ -64,12 +158,12 @@ export async function addToCart(
   await sb.from('qr_cart_items').insert({
     venue_id: venueId,
     table_label: tableLabel,
-    menu_item_id: item.id,
-    name: item.name,
-    price: item.price,
+    menu_item_id: itemId,
+    name: line.name,
+    price: line.price,
     quantity,
-    modifier_notes: modifierNotes,
-    selected_option_ids: selectedOptionIds,
+    modifier_notes: line.notes,
+    selected_option_ids: line.optionIds,
   })
 }
 
@@ -95,7 +189,7 @@ export async function resolveTable(
     .from('dining_tables')
     .select('id')
     .eq('venue_id', venueId)
-    .ilike('name', tableLabel)
+    .ilike('name', literalPattern(tableLabel))
     .maybeSingle()
   return data
 }
@@ -169,7 +263,9 @@ export async function placeOrder(
     .select('qr_require_approval')
     .eq('id', venueId)
     .maybeSingle()
-  if (venueRow?.qr_require_approval === true) {
+  // A label that matches none of the venue's tables (a mistyped or made-up
+  // link) always waits for staff: its page has no table PIN to protect it.
+  if (venueRow?.qr_require_approval === true || !table) {
     return placePendingOrder(sb, venueId, tableLabel, items, menuItemById, now)
   }
 
@@ -415,7 +511,8 @@ export async function setQuantity(
   quantity: number,
 ) {
   const sb = createAdminSupabase()
-  if (quantity <= 0) {
+  quantity = Math.floor(Number(quantity))
+  if (!Number.isFinite(quantity) || quantity <= 0) {
     await sb
       .from('qr_cart_items')
       .delete()
@@ -425,7 +522,7 @@ export async function setQuantity(
   } else {
     await sb
       .from('qr_cart_items')
-      .update({ quantity })
+      .update({ quantity: Math.min(MAX_LINE_QUANTITY, quantity) })
       .eq('id', cartItemId)
       .eq('venue_id', venueId)
       .eq('table_label', tableLabel)

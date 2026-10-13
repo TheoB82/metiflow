@@ -8,6 +8,8 @@ import {
   placeOrder,
   getPlacedOrder,
   restoreDeclined,
+  isQrOrderingOn,
+  type CartOption,
   type PlaceOrderResult,
 } from '@/lib/cart'
 import {
@@ -40,19 +42,34 @@ export async function verifyTablePinAction(venueId: string, table: string, pin: 
   return verifyTablePin(venueId, table, pin)
 }
 
+// Every action that writes to the basket or places an order: the venue takes
+// QR orders, and this browser has the table's PIN (when one is set). Reads
+// (the 3 s poll) check the PIN only, to keep the poll to its own queries.
+async function assertCanOrder(venueId: string, table: string) {
+  if (!(await isQrOrderingOn(venueId))) throw new Error('QR_ORDERING_OFF')
+  await assertTableVerified(venueId, table)
+}
+
 export async function getCartAction(venueId: string, table: string) {
   await assertTableVerified(venueId, table)
   return getCart(venueId, table)
 }
 
+// Only the item, options and quantities count: the server prices the line
+// (lib/cart.ts priceLine). `item` may still arrive as the object an older,
+// already-open page sends; its name and price are ignored.
 export async function addToCartAction(
   venueId: string,
   table: string,
-  item: { id: string; name: string; price: number },
-  opts?: { modifierNotes?: string; quantity?: number; optionIds?: string[] },
+  item: string | { id: string },
+  opts?: { quantity?: number; options?: CartOption[]; optionIds?: string[] },
 ) {
-  await assertTableVerified(venueId, table)
-  await addToCart(venueId, table, item, opts)
+  await assertCanOrder(venueId, table)
+  const itemId = typeof item === 'string' ? item : item?.id
+  if (typeof itemId !== 'string') throw new Error('ITEM_UNAVAILABLE')
+  const options =
+    opts?.options ?? (opts?.optionIds ?? []).map((id) => ({ id, qty: 1 }))
+  await addToCart(venueId, table, itemId, { quantity: opts?.quantity, options })
   return getCart(venueId, table)
 }
 
@@ -62,7 +79,7 @@ export async function setQuantityAction(
   cartItemId: string,
   quantity: number,
 ) {
-  await assertTableVerified(venueId, table)
+  await assertCanOrder(venueId, table)
   await setQuantity(venueId, table, cartItemId, quantity)
   return getCart(venueId, table)
 }
@@ -71,7 +88,7 @@ export async function placeOrderAction(
   venueId: string,
   table: string,
 ): Promise<PlaceOrderResult> {
-  await assertTableVerified(venueId, table)
+  await assertCanOrder(venueId, table)
   return placeOrder(venueId, table)
 }
 

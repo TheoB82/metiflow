@@ -1,7 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase'
 import { OnboardingShell } from '@/components/OnboardingShell'
 import { TAKEAWAY_PLANS, RESTAURANT_PLANS, type PlanId } from '@/lib/plans'
 
@@ -25,9 +24,10 @@ export default function PlanPage() {
     setLoading(true); setError('')
     const venueId = sessionStorage.getItem('onboarding_venue_id')
     if (!venueId) { router.push('/onboarding/venue'); return }
-    const sb = createClient()
-    const { error: err } = await sb.from('venues').update({ plan: selected }).eq('id', venueId)
-    if (err) { setError(err.message); setLoading(false); return }
+    // The plan a venue is on is set only by Stripe (or Metiflow HQ) once
+    // it's paid for — the database ignores a plan sent from the browser.
+    // Kept for this onboarding session: the features step uses it.
+    sessionStorage.setItem('onboarding_plan', selected)
     router.push('/onboarding/handoff')
   }
 

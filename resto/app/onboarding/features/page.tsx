@@ -1,7 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase'
 import { OnboardingShell } from '@/components/OnboardingShell'
 import { mergeVenueSettings } from '@/lib/venueSettings'
 import { t } from '@/lib/i18n'
@@ -48,17 +47,10 @@ export default function FeaturesPage() {
       setValues(v => ({ ...v, reservations: false, seat_selection: false }))
     }
 
-    async function loadPlan() {
-      const venueId = sessionStorage.getItem('onboarding_venue_id')
-      if (!venueId) { setLoading(false); return }
-      const sb = createClient()
-      const { data } = await sb.from('venues').select('plan').eq('id', venueId).single()
-      // "Pro" tiers are explicitly "+ Online backup" — cloud history on by
-      // default there, off for the local-only tiers. Editable either way.
-      setCloudHistory((data?.plan ?? '').toString().endsWith('_online'))
-      setLoading(false)
-    }
-    loadPlan()
+    // "Pro" tiers are explicitly "+ Online backup" — cloud history on by
+    // default there, off for the local-only tiers. Editable either way.
+    setCloudHistory((sessionStorage.getItem('onboarding_plan') ?? '').endsWith('_online'))
+    setLoading(false)
   }, [])
 
   async function handleContinue() {

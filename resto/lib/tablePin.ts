@@ -1,7 +1,7 @@
 import { createHmac } from 'node:crypto'
 import { cookies } from 'next/headers'
 import { createAdminSupabase } from './supabase-server'
-import { resolveTable } from './cart'
+import { literalPattern } from './cart'
 
 // Protects a table's QR ordering/bill page from someone who knows or
 // guesses the table's static QR URL and uses it remotely — the physical
@@ -74,17 +74,17 @@ type DiningTablePinRow = {
   qr_pin_locked_until: string | null
 }
 
+// One query: the table this label names, with its PIN state.
 async function fetchTableRow(
   sb: ReturnType<typeof createAdminSupabase>,
   venueId: string,
   tableLabel: string,
 ): Promise<DiningTablePinRow | null> {
-  const table = await resolveTable(sb, venueId, tableLabel)
-  if (!table) return null
   const { data } = await sb
     .from('dining_tables')
     .select('id, qr_pin, qr_pin_updated_at, qr_pin_attempts, qr_pin_locked_until')
-    .eq('id', table.id)
+    .eq('venue_id', venueId)
+    .ilike('name', literalPattern(tableLabel))
     .maybeSingle()
   return (data as DiningTablePinRow | null) ?? null
 }
@@ -96,18 +96,26 @@ export type PinStatus =
   | { state: 'locked'; retryAt: string }
 
 export async function getPinStatus(venueId: string, tableLabel: string): Promise<PinStatus> {
+  return (await pinState(venueId, tableLabel)).status
+}
+
+async function pinState(
+  venueId: string,
+  tableLabel: string,
+): Promise<{ status: PinStatus; tableId: string | null }> {
   const sb = createAdminSupabase()
   const row = await fetchTableRow(sb, venueId, tableLabel)
-  if (!row?.qr_pin) return { state: 'none' }
+  const tableId = row?.id ?? null
+  if (!row?.qr_pin) return { status: { state: 'none' }, tableId }
   if (row.qr_pin_locked_until && new Date(row.qr_pin_locked_until) > new Date()) {
-    return { state: 'locked', retryAt: row.qr_pin_locked_until }
+    return { status: { state: 'locked', retryAt: row.qr_pin_locked_until }, tableId }
   }
   const store = await cookies()
   const cookie = store.get(cookieName(venueId, tableLabel))?.value
   if (cookie && tokenMatches(cookie, row.qr_pin, row.qr_pin_updated_at ?? '')) {
-    return { state: 'verified' }
+    return { status: { state: 'verified' }, tableId }
   }
-  return { state: 'needed' }
+  return { status: { state: 'needed' }, tableId }
 }
 
 export async function setTablePin(
@@ -169,8 +177,13 @@ export async function verifyTablePin(
 // rendering any ordering UI, but a server action is still directly
 // callable given the venueId/table, so each one checks again rather than
 // trusting the page never got skipped.
-export async function assertTableVerified(venueId: string, tableLabel: string) {
-  const status = await getPinStatus(venueId, tableLabel)
-  if (status.state === 'verified' || status.state === 'none') return
+// Returns the table's id (null when the label matches no table), so a
+// caller that needs it doesn't look it up again.
+export async function assertTableVerified(
+  venueId: string,
+  tableLabel: string,
+): Promise<string | null> {
+  const { status, tableId } = await pinState(venueId, tableLabel)
+  if (status.state === 'verified' || status.state === 'none') return tableId
   throw new Error('PIN_REQUIRED')
 }

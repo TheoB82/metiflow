@@ -37,7 +37,7 @@ function wholeNumber(n: unknown, min: number, max: number): number {
 
 // Escapes ILIKE wildcards so a table label is matched literally — a label
 // of "%" otherwise matches every table.
-function literalPattern(text: string): string {
+export function literalPattern(text: string): string {
   return text.replace(/[\\%_]/g, (c) => `\\${c}`)
 }
 
@@ -444,6 +444,9 @@ export type PlacedOrderItem = {
 export async function getPlacedOrder(
   venueId: string,
   tableLabel: string,
+  // The table's id when the caller already looked it up (the poll does,
+  // checking the PIN); undefined to look it up here.
+  knownTableId?: string | null,
 ): Promise<{
   items: PlacedOrderItem[]
   total: number
@@ -451,8 +454,11 @@ export async function getPlacedOrder(
   pendingTotal: number
 } | null> {
   const sb = createAdminSupabase()
-  const table = await resolveTable(sb, venueId, tableLabel)
-  const orderId = await findActiveOrder(sb, venueId, tableLabel, table?.id ?? null)
+  const tableId =
+    knownTableId !== undefined
+      ? knownTableId
+      : ((await resolveTable(sb, venueId, tableLabel))?.id ?? null)
+  const orderId = await findActiveOrder(sb, venueId, tableLabel, tableId)
 
   const toItems = (rows: { item_name: string; quantity: number; unit_price: number; modifier_notes: string | null }[] | null) =>
     (rows ?? []).map((i) => ({

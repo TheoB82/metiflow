@@ -10,6 +10,7 @@ import { createAdminSupabase } from './supabase-server'
 // thing that worked in that same test. Confirmed end-to-end working
 // against a real device 2026-08-23.
 export async function broadcastCallWaiter(venueId: string, tableLabel: string) {
+  if (!(await claimAlertSlot(venueId, `call:${tableLabel}`))) return
   await broadcastAlert(venueId, 'call_waiter', { table: tableLabel })
 }
 
@@ -18,7 +19,23 @@ export async function broadcastCallWaiter(venueId: string, tableLabel: string) {
 // round placed straight from a customer's phone otherwise only showed up
 // silently on the bar's own KDS tab.
 export async function broadcastQrDrinkOrder(venueId: string, tableLabel: string) {
+  if (!(await claimAlertSlot(venueId, `drink:${tableLabel}`))) return
   await broadcastAlert(venueId, 'qr_drink_order', { table: tableLabel })
+}
+
+// Alerts are public (anyone with a table's link can ring it), so each one
+// asks the database first: one per table every 30 s, one per venue every
+// 3 s, none for a venue that doesn't exist (claim_alert_slot,
+// supabase_prelaunch_load.sql). A repeat tap inside the window is dropped
+// quietly — staff were already alerted. Until that function is deployed,
+// alerts go out as before.
+async function claimAlertSlot(venueId: string, key: string): Promise<boolean> {
+  const { data, error } = await createAdminSupabase().rpc('claim_alert_slot', {
+    p_venue_id: venueId,
+    p_key: key,
+  })
+  if (error) return error.code === 'PGRST202'
+  return data === true
 }
 
 async function broadcastAlert(

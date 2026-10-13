@@ -95,11 +95,11 @@ export async function placeOrderAction(
 // One round-trip for the 3s poll: first return any declined round's items to
 // the basket (reporting how many, so the page can say so), then read both.
 export async function pollAction(venueId: string, table: string) {
-  await assertTableVerified(venueId, table)
+  const tableId = await assertTableVerified(venueId, table)
   const restored = await restoreDeclined(venueId, table)
   const [cart, placed] = await Promise.all([
     getCart(venueId, table),
-    getPlacedOrder(venueId, table),
+    getPlacedOrder(venueId, table, tableId),
   ])
   return { cart, placed, restored }
 }

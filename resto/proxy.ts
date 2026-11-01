@@ -8,12 +8,7 @@ import { createServerClient } from '@supabase/ssr'
 const DEMO_ADMIN_EMAIL = 'tbratelis@gmail.com'
 
 export async function proxy(request: NextRequest) {
-  // The folder itself is the demo's index.html (Next doesn't serve one).
-  const { pathname } = request.nextUrl
-  const response =
-    pathname === '/app-demo' || pathname === '/app-demo/'
-      ? NextResponse.rewrite(new URL('/app-demo/index.html', request.url))
-      : NextResponse.next({ request })
+  const response = NextResponse.next({ request })
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -30,7 +25,16 @@ export async function proxy(request: NextRequest) {
   // Verified claims (the token's signature is checked), not just the cookie.
   const { data } = await supabase.auth.getClaims()
   const email = data?.claims?.email
-  if (email === DEMO_ADMIN_EMAIL) return response
+  if (email === DEMO_ADMIN_EMAIL) {
+    // The folder itself goes to its index.html (Next doesn't serve one, and
+    // strips the trailing slash): the app finds its files relative to the
+    // page's own folder, so it must open as /app-demo/index.html.
+    const { pathname } = request.nextUrl
+    if (pathname === '/app-demo' || pathname === '/app-demo/') {
+      return NextResponse.redirect(new URL('/app-demo/index.html', request.url))
+    }
+    return response
+  }
 
   const login = new URL('/login', request.url)
   login.searchParams.set('next', '/app-demo/')

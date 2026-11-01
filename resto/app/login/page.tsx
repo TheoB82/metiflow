@@ -33,6 +33,11 @@ export default function LoginPage() {
     const { data: { user } } = await sb.auth.getUser()
     if (!user) { setError('Sign in failed'); setLoading(false); return }
     sessionStorage.removeItem('onboarding_email')
+    // Back to the app demo when that's what sent us here (proxy.ts); only
+    // that one path, so this can't be used to send anyone elsewhere.
+    if (new URLSearchParams(window.location.search).get('next') === '/app-demo/') {
+      window.location.assign('/app-demo/'); return
+    }
     if (user.email === 'admin@metiflow.com') { router.push('/admin/enquiries'); return }
     const { data: venues } = await sb.from('venues').select('id').eq('owner_id', user.id).limit(1)
     router.push(!venues || venues.length === 0 ? '/onboarding/venue' : '/dashboard')
